@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2025-12-15
  */
 public interface ISaleService extends IService<Sale> {
-
+    boolean createSale(Sale sale);
 }
