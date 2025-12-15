@@ -2,6 +2,7 @@ package com.inventory.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.inventory.entity.Sale;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.inventory.entity.Sale;
  * @author deriou
  * @since 2025-12-15
  */
+@Mapper
 public interface SaleMapper extends BaseMapper<Sale> {
 
 }
