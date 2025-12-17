@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('ERP - 仪表盘')}"></head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('index')}"></nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">仪表盘</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">导出报表</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card card-erp text-white bg-primary h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-currency-yen"></i> 今日销售额</h5>
+                            <p class="card-text display-6 fw-bold" id="todayIncome">¥0.00</p>
+                            <small>截止至当前时间</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-erp text-white bg-danger h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-exclamation-triangle"></i> 库存紧张商品</h5>
+                            <p class="card-text display-6 fw-bold" id="lowStockCount">0</p>
+                            <small>需要尽快补货</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-erp text-dark bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-hdd-network"></i> 系统状态</h5>
+                            <p class="card-text display-6 fw-bold text-success">正常</p>
+                            <small>数据库连接正常</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-erp">
+                <div class="card-header bg-white font-weight-bold">
+                    📈 近 7 天销售趋势图
+                </div>
+                <div class="card-body">
+                    <div id="mainChart" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+
+<script>
+    // 页面加载完成后，请求数据
+    $(document).ready(function() {
+        $.ajax({
+            url: "/dashboard/data",
+            type: "GET",
+            success: function(res) {
+                // 1. 填充数字卡片
+                $("#todayIncome").text("¥" + res.todayIncome);
+                $("#lowStockCount").text(res.lowStockCount);
+
+                // 2. 渲染图表
+                initChart(res.chartDates, res.chartValues);
+            }
+        });
+    });
+
+    function initChart(dates, values) {
+        var myChart = echarts.init(document.getElementById('mainChart'));
+
+        var option = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: dates // 后端传来的日期
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '销售额',
+                    type: 'line',
+                    stack: 'Total',
+                    data: values, // 后端传来的金额
+                    smooth: true, // 平滑曲线
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(0, 123, 255, 0.5)' },
+                            { offset: 1, color: 'rgba(0, 123, 255, 0.1)' }
+                        ])
+                    },
+                    itemStyle: {
+                        color: '#007bff'
+                    }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+
+        window.onresize = function() {
+            myChart.resize();
+        };
+    }
+</script>
+
+</body>
+</html>
