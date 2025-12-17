@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="commonHead(title)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">进销存系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse" th:fragment="sidebar(activeUri)">
+    <div class="position-sticky pt-3 sidebar-sticky">
+        <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none px-3">
+            <span class="fs-4 fw-bold text-primary">进销存系统</span>
+        </a>
+        <hr>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeUri == 'index'} ? 'active'" href="/">
+                    <i class="bi bi-speedometer2"></i> 仪表盘
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeUri == 'product'} ? 'active'" href="/page/product">
+                    <i class="bi bi-box-seam"></i> 商品管理
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeUri == 'inbound'} ? 'active'" href="/page/inbound">
+                    <i class="bi bi-cart-plus"></i> 采购入库
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeUri == 'sale'} ? 'active'" href="/page/sale">
+                    <i class="bi bi-receipt"></i> 销售出库
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">
+                    <i class="bi bi-currency-yen"></i> 财务管理
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<header class="navbar navbar-light sticky-top bg-white flex-md-nowrap p-0 shadow-sm" th:fragment="topbar">
+    <div class="container-fluid">
+        <span class="navbar-text ms-auto px-3">
+            <i class="bi bi-person-circle"></i> 管理员 Eric
+        </span>
+    </div>
+</header>
+
+</body>
+</html>
