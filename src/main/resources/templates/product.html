@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理 - 进销存系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">进销存管理系统</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link active" href="/page/product">商品管理</a></li>
+                <li class="nav-item"><a class="nav-link" href="/page/inbound">进货入库</a></li>
+                <li class="nav-item"><a class="nav-link" href="/page/sale">销售出库</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>📦 商品列表</h3>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">
+            + 新增商品
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>商品名称</th>
+                    <th>供应商</th>
+                    <th>进货价</th>
+                    <th>零售价</th>
+                    <th>库存</th> <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${products}"
+                    th:classappend="${p.stock < p.warningNum} ? 'table-danger' : ''">
+                    <td th:text="${p.id}">1</td>
+                    <td th:text="${p.name}">可乐</td>
+                    <td th:text="${p.supplier}">可口可乐</td>
+                    <td th:text="${p.costPrice}">1.5</td>
+                    <td th:text="${p.salePrice}">3.0</td>
+
+                    <td>
+                        <span th:text="${p.stock}" class="fw-bold"></span>
+                        <span th:if="${p.stock < p.warningNum}" class="badge bg-danger ms-1">缺货</span>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增商品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label>商品名称</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label>进货价</label>
+                            <input type="number" class="form-control" name="costPrice" step="0.01">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label>零售价</label>
+                            <input type="number" class="form-control" name="salePrice" step="0.01">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label>初始库存</label>
+                            <input type="number" class="form-control" name="stock" value="0">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label>预警阈值</label>
+                            <input type="number" class="form-control" name="warningNum" value="10">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>供应商</label>
+                        <input type="text" class="form-control" name="supplier">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveProduct()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function saveProduct() {
+        // 1. 把表单数据转换成 JSON 对象
+        var formData = {};
+        $("#addForm").serializeArray().forEach(function(item) {
+            formData[item.name] = item.value;
+        });
+
+        // 2. 发送 Ajax 请求
+        $.ajax({
+            url: "/product/add", // ⚠️ 注意：我们需要去补一个 ProductController 来接收这个请求
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(res) {
+                if (res.success) {
+                    alert("保存成功！");
+                    location.reload(); // 刷新页面看新数据
+                } else {
+                    alert("保存失败");
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
