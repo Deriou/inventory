@@ -1,8 +1,10 @@
 package com.inventory.controller;
 
 import com.inventory.entity.Product;
+import com.inventory.entity.SysUser;
 import com.inventory.service.IInboundService;
 import com.inventory.service.IProductService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +18,9 @@ public class PageController {
 
     @Autowired
     private IInboundService inboundService;
+
+    @Autowired
+    private com.inventory.service.ISysUserService sysUserService;
 
     @GetMapping("/page/inbound/create")
     public String inboundCreatePage(Model model) {
@@ -62,5 +67,23 @@ public class PageController {
     public String productPage(Model model) {
         model.addAttribute("products", productService.list());
         return "product";
+    }
+
+    // 在 PageController 中添加
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login"; // 对应 login.html
+    }
+
+    @GetMapping("/page/user")
+    public String userPage(Model model, HttpSession session) {
+        // 只有管理员(role=1)能看
+        SysUser user = (SysUser) session.getAttribute("currentUser");
+        // 这里做个简单拦截，如果不是管理员，踢回首页 (更好的做法是用拦截器)
+        if (user == null || user.getRole() != 1) {
+            return "redirect:/";
+        }
+        model.addAttribute("users", sysUserService.list()); // 注入所有用户数据
+        return "sys_user"; // 对应 sys_user.html
     }
 }

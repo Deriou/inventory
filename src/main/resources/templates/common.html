@@ -12,8 +12,14 @@
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse" th:fragment="sidebar(activeUri)">
     <div class="position-sticky pt-3 sidebar-sticky">
         <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none px-3">
-            <span class="fs-4 fw-bold text-primary">进销存系统</span>
+            <span class="fs-4 fw-bold text-primary">ERP 管理系统</span>
         </a>
+        <div class="px-3 mb-3 text-muted small" th:if="${session.currentUser != null}">
+            当前用户: <span th:text="${session.currentUser.realName}"></span>
+            <span th:if="${session.currentUser.role == 1}">(系统管理员)</span>
+            <span th:if="${session.currentUser.role == 2}">(仓库管理员)</span>
+            <span th:if="${session.currentUser.role == 3}">(财务管理员)</span>
+        </div>
         <hr>
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -22,31 +28,43 @@
                 </a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item" th:if="${session.currentUser != null && session.currentUser.role == 1}">
+                <a class="nav-link" th:classappend="${activeUri == 'user'} ? 'active'" href="/page/user">
+                    <i class="bi bi-people"></i> 用户管理
+                </a>
+            </li>
+
+            <li class="nav-item" th:if="${session.currentUser != null && (session.currentUser.role == 1 || session.currentUser.role == 2)}">
                 <a class="nav-link" th:classappend="${activeUri == 'product'} ? 'active'" href="/page/product">
                     <i class="bi bi-box-seam"></i> 商品管理
                 </a>
             </li>
-
-            <li class="nav-item">
+            <li class="nav-item" th:if="${session.currentUser != null && (session.currentUser.role == 1 || session.currentUser.role == 2)}">
                 <a class="nav-link" th:classappend="${activeUri == 'inbound'} ? 'active'" href="/page/inbound">
-                    <i class="bi bi-cart-plus"></i> 采购入库
+                    <i class="bi bi-truck"></i> 采购入库
                 </a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item" th:if="${session.currentUser != null && (session.currentUser.role == 1 || session.currentUser.role == 3)}">
                 <a class="nav-link" th:classappend="${activeUri == 'sale'} ? 'active'" href="/page/sale">
                     <i class="bi bi-receipt"></i> 销售出库
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">
-                    <i class="bi bi-currency-yen"></i> 财务管理
+            <li class="nav-item mt-4">
+                <a class="nav-link text-danger" href="#" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> 退出登录
                 </a>
             </li>
         </ul>
     </div>
+    <script>
+        function logout() {
+            if(confirm("确定退出登录吗？")) {
+                fetch("/sysUser/logout").then(() => location.href = "/login");
+            }
+        }
+    </script>
 </nav>
 
 <header class="navbar navbar-light sticky-top bg-white flex-md-nowrap p-0 shadow-sm" th:fragment="topbar">

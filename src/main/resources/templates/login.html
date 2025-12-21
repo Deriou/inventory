@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>系统登录 - 进销存管理</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .form-signin { width: 100%; max-width: 330px; padding: 15px; margin: auto; }
+    </style>
+</head>
+<body class="text-center">
+<main class="form-signin">
+    <form id="loginForm">
+        <h1 class="h3 mb-3 fw-normal">ERP 系统登录</h1>
+
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control" name="username" placeholder="账号" required>
+            <label>账号</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="password" class="form-control" name="password" placeholder="密码" required>
+            <label>密码</label>
+        </div>
+
+        <button class="w-100 btn btn-lg btn-primary" type="button" onclick="doLogin()">登录</button>
+        <p class="mt-5 mb-3 text-muted">&copy; 2025 Inventory System</p>
+    </form>
+</main>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script>
+    function doLogin() {
+        var data = {
+            username: $("input[name='username']").val(),
+            password: $("input[name='password']").val()
+        };
+        $.ajax({
+            url: "/sysUser/login",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(res) {
+                if (res.success) {
+                    location.href = "/"; // 登录成功跳首页
+                } else {
+                    alert(res.msg);
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('用户管理')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('user')}"></nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+                <h1 class="h4">👥 用户权限管理</h1>
+                <button class="btn btn-sm btn-primary" onclick="showAddModal()">
+                    <i class="bi bi-person-plus"></i> 新增用户
+                </button>
+            </div>
+
+            <div class="card card-erp">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>账号</th>
+                            <th>真实姓名</th>
+                            <th>角色</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}">
+                            <td th:text="${u.id}"></td>
+                            <td th:text="${u.username}"></td>
+                            <td th:text="${u.realName}"></td>
+                            <td>
+                                <span th:if="${u.role == 1}" class="badge bg-danger">系统管理员</span>
+                                <span th:if="${u.role == 2}" class="badge bg-primary">仓库管理员</span>
+                                <span th:if="${u.role == 3}" class="badge bg-success">财务管理员</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        th:if="${u.id != 1}"
+                                        th:onclick="'deleteUser(' + ${u.id} + ')'">删除</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">新增用户</h5></div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <div class="mb-3"><label>账号</label><input type="text" class="form-control" name="username"></div>
+                    <div class="mb-3"><label>密码</label><input type="text" class="form-control" name="password"></div>
+                    <div class="mb-3"><label>姓名</label><input type="text" class="form-control" name="realName"></div>
+                    <div class="mb-3">
+                        <label>角色</label>
+                        <select class="form-select" name="role">
+                            <option value="1">系统管理员 (全权)</option>
+                            <option value="2">仓库管理员 (进货/库存)</option>
+                            <option value="3">财务管理员 (销售/报表)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="saveUser()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    function showAddModal() { $("#userModal").modal("show"); }
+
+    function saveUser() {
+        var data = {};
+        $("#userForm").serializeArray().forEach(item => data[item.name] = item.value);
+        $.ajax({
+            url: "/sysUser/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(res) {
+                if(res.success) location.reload();
+                else alert(res.msg);
+            }
+        });
+    }
+
+    function deleteUser(id) {
+        if(confirm("确定删除该用户吗？")) {
+            $.ajax({
+                url: "/sysUser/delete/" + id,
+                type: "POST",
+                success: function(res) {
+                    if(res.success) location.reload();
+                    else alert(res.msg);
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
