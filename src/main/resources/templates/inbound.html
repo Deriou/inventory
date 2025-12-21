@@ -1,72 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>进货管理</title>
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<head th:replace="~{common :: commonHead('进货入库管理')}"></head>
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="/">进销存管理系统</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="/page/product">商品管理</a></li>
-                <li class="nav-item"><a class="nav-link active" href="/page/inbound">进货入库</a></li>
-                <li class="nav-item"><a class="nav-link" href="/page/sale">销售出库</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('inbound')}"></nav>
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>🚛 进货入库单</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inboundModal">
-            + 新建采购计划
-        </button>
-    </div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>单号ID</th>
-                    <th>商品ID</th> <th>进货数量</th>
-                    <th>进货单价</th>
-                    <th>创建时间</th>
-                    <th>状态</th>
-                    <th>操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="item : ${inbounds}">
-                    <td th:text="${item.id}"></td>
-                    <td th:text="${item.productId}"></td>
-                    <td th:text="${item.quantity}"></td>
-                    <td th:text="${item.purchasePrice}"></td>
-                    <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+            <div th:replace="~{common :: topbar}"></div>
 
-                    <td th:switch="${item.status}">
-                        <span th:case="0" class="badge bg-warning text-dark">⏳ 待入库</span>
-                        <span th:case="1" class="badge bg-success">✅ 已入库</span>
-                        <span th:case="2" class="badge bg-secondary">已取消</span>
-                    </td>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+                <h1 class="h4">🚛 进货入库单</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#inboundModal">
+                        <i class="bi bi-plus-lg"></i> 新建采购计划
+                    </button>
+                </div>
+            </div>
 
-                    <td>
-                        <button th:if="${item.status == 0}"
-                                class="btn btn-sm btn-outline-success"
-                                th:onclick="'confirmInbound(' + ${item.id} + ')'">
-                            📦 确认收货
-                        </button>
-                        <span th:if="${item.status == 1}" class="text-muted small">无操作</span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="card card-erp">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>单号ID</th>
+                                <th>商品ID</th>
+                                <th>进货数量</th>
+                                <th>进货单价</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="item : ${inbounds}">
+                                <td th:text="${item.id}"></td>
+                                <td th:text="${item.productId}"></td>
+                                <td th:text="${item.quantity}"></td>
+                                <td th:text="${item.purchasePrice}"></td>
+                                <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+
+                                <td th:switch="${item.status}">
+                                    <span th:case="0" class="badge bg-warning text-dark">⏳ 待入库</span>
+                                    <span th:case="1" class="badge bg-success">✅ 已入库</span>
+                                    <span th:case="2" class="badge bg-secondary">已取消</span>
+                                </td>
+
+                                <td>
+                                    <button th:if="${item.status == 0}"
+                                            class="btn btn-sm btn-outline-success"
+                                            th:onclick="'confirmInbound(' + ${item.id} + ')'">
+                                        📦 确认收货
+                                    </button>
+                                    <span th:if="${item.status == 1}" class="text-muted small">无操作</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(inbounds)}">
+                                <td colspan="7" class="text-center text-muted py-3">暂无进货记录</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 </div>
 
@@ -84,7 +85,7 @@
                         <select class="form-select" name="productId">
                             <option th:each="p : ${products}"
                                     th:value="${p.id}"
-                                    th:text="${p.name} + ' (当前库存:' + ${p.stock} + ')'">
+                                    th:text="${p.name} + ' (库存:' + ${p.stock} + ')'">
                             </option>
                         </select>
                     </div>
@@ -110,7 +111,6 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // 1. 提交采购计划
     function saveInbound() {
         var formData = {};
         $("#inboundForm").serializeArray().forEach(item => formData[item.name] = item.value);
@@ -131,160 +131,6 @@
         });
     }
 
-    // 2. 确认收货 (调用后端事务接口)
-    function confirmInbound(id) {
-        if (!confirm("确定货物已送到，并加入库存吗？")) return;
-
-        $.ajax({
-            url: "/inbound/confirm/" + id,
-            type: "POST",
-            success: function(res) {
-                if (res.success) {
-                    alert("入库成功！库存已更新。");
-                    location.reload();
-                } else {
-                    alert("操作失败：" + res.msg);
-                }
-            }
-        });
-    }
-</script>
-
-</body>
-</html><!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>进货管理</title>
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="/">进销存管理系统</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="/page/product">商品管理</a></li>
-                <li class="nav-item"><a class="nav-link active" href="/page/inbound">进货入库</a></li>
-                <li class="nav-item"><a class="nav-link" href="/page/sale">销售出库</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>🚛 进货入库单</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inboundModal">
-            + 新建采购计划
-        </button>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>单号ID</th>
-                    <th>商品ID</th> <th>进货数量</th>
-                    <th>进货单价</th>
-                    <th>创建时间</th>
-                    <th>状态</th>
-                    <th>操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="item : ${inbounds}">
-                    <td th:text="${item.id}"></td>
-                    <td th:text="${item.productId}"></td>
-                    <td th:text="${item.quantity}"></td>
-                    <td th:text="${item.purchasePrice}"></td>
-                    <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
-
-                    <td th:switch="${item.status}">
-                        <span th:case="0" class="badge bg-warning text-dark">⏳ 待入库</span>
-                        <span th:case="1" class="badge bg-success">✅ 已入库</span>
-                        <span th:case="2" class="badge bg-secondary">已取消</span>
-                    </td>
-
-                    <td>
-                        <button th:if="${item.status == 0}"
-                                class="btn btn-sm btn-outline-success"
-                                th:onclick="'confirmInbound(' + ${item.id} + ')'">
-                            📦 确认收货
-                        </button>
-                        <span th:if="${item.status == 1}" class="text-muted small">无操作</span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="inboundModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">新建采购计划</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="inboundForm">
-                    <div class="mb-3">
-                        <label>选择商品</label>
-                        <select class="form-select" name="productId">
-                            <option th:each="p : ${products}"
-                                    th:value="${p.id}"
-                                    th:text="${p.name} + ' (当前库存:' + ${p.stock} + ')'">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>进货数量</label>
-                        <input type="number" class="form-control" name="quantity" value="100">
-                    </div>
-                    <div class="mb-3">
-                        <label>进货单价</label>
-                        <input type="number" class="form-control" name="purchasePrice" step="0.01">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="saveInbound()">提交计划</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // 1. 提交采购计划
-    function saveInbound() {
-        var formData = {};
-        $("#inboundForm").serializeArray().forEach(item => formData[item.name] = item.value);
-
-        $.ajax({
-            url: "/inbound/add",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(formData),
-            success: function(res) {
-                if (res.success) {
-                    alert("下单成功！请在列表中点击'确认收货'入库。");
-                    location.reload();
-                } else {
-                    alert(res.msg);
-                }
-            }
-        });
-    }
-
-    // 2. 确认收货 (调用后端事务接口)
     function confirmInbound(id) {
         if (!confirm("确定货物已送到，并加入库存吗？")) return;
 

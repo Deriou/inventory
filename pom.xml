@@ -89,10 +89,7 @@
                             <artifactId>lombok</artifactId>
                         </path>
                     </annotationProcessorPaths>
-                    <source>8</source>
-                    <target>8</target>
 
-                    <target>cyp</target>
                 </configuration>
             </plugin>
             <plugin>

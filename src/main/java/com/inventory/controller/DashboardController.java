@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class DashboardController {
     @Autowired
     private IProductService productService;
+    @Autowired
     private ISaleService saleService;
 
     @GetMapping("/dashboard/data")
