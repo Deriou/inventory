@@ -11,9 +11,18 @@
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
                 <h1 class="h4">👥 用户权限管理</h1>
-                <button class="btn btn-sm btn-primary" onclick="showAddModal()">
-                    <i class="bi bi-person-plus"></i> 新增用户
-                </button>
+
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="input-group me-2" style="width: 250px;">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-0 bg-light" id="searchInput"
+                               placeholder="输入账号或姓名搜索..." onkeyup="filterTable()">
+                    </div>
+
+                    <button class="btn btn-sm btn-primary" onclick="showAddModal()">
+                        <i class="bi bi-person-plus"></i> 新增用户
+                    </button>
+                </div>
             </div>
 
             <div class="card card-erp">
@@ -28,18 +37,28 @@
                             <th>操作</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="u : ${users}">
+                        <tbody id="userTableBody">
+                        <tr th:each="u : ${users}" class="user-row">
                             <td th:text="${u.id}"></td>
-                            <td th:text="${u.username}"></td>
-                            <td th:text="${u.realName}"></td>
+                            <td class="search-username" th:text="${u.username}"></td>
+                            <td class="search-realname" th:text="${u.realName}"></td>
                             <td>
                                 <span th:if="${u.role == 1}" class="badge bg-danger">系统管理员</span>
                                 <span th:if="${u.role == 2}" class="badge bg-primary">仓库管理员</span>
                                 <span th:if="${u.role == 3}" class="badge bg-success">财务管理员</span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-danger"
+                                <button class="btn btn-sm btn-light text-primary"
+                                        th:onclick="openEditModal([[${u.id}]], [[${u.username}]], [[${u.realName}]], [[${u.role}]])">
+                                    编辑
+                                </button>
+
+                                <button class="btn btn-sm btn-light text-secondary"
+                                        th:onclick="openChangePwdModal([[${u.id}]], [[${u.username}]])">
+                                    改密
+                                </button>
+
+                                <button class="btn btn-sm btn-light text-danger"
                                         th:if="${u.id != 1}"
                                         th:onclick="'deleteUser(' + ${u.id} + ')'">删除</button>
                             </td>
@@ -58,9 +77,22 @@
             <div class="modal-header"><h5 class="modal-title">新增用户</h5></div>
             <div class="modal-body">
                 <form id="userForm">
-                    <div class="mb-3"><label>账号</label><input type="text" class="form-control" name="username"></div>
-                    <div class="mb-3"><label>密码</label><input type="text" class="form-control" name="password"></div>
-                    <div class="mb-3"><label>姓名</label><input type="text" class="form-control" name="realName"></div>
+                    <div class="mb-3">
+                        <label>账号 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" name="password" id="inputPwd" placeholder="请输入密码" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>确认密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="inputPwdConfirm" placeholder="请再次输入密码">
+                    </div>
+                    <div class="mb-3">
+                        <label>真实姓名</label>
+                        <input type="text" class="form-control" name="realName">
+                    </div>
                     <div class="mb-3">
                         <label>角色</label>
                         <select class="form-select" name="role">
@@ -78,37 +110,183 @@
     </div>
 </div>
 
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">编辑用户</h5></div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="mb-3">
+                        <label>账号</label>
+                        <input type="text" class="form-control" id="edit_username" readonly>
+                        <small class="text-muted">账号不可修改</small>
+                    </div>
+                    <div class="mb-3">
+                        <label>真实姓名</label>
+                        <input type="text" class="form-control" name="realName" id="edit_realName">
+                    </div>
+                    <div class="mb-3">
+                        <label>角色</label>
+                        <select class="form-select" name="role" id="edit_role">
+                            <option value="1">系统管理员</option>
+                            <option value="2">仓库管理员</option>
+                            <option value="3">财务管理员</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitUpdate()">保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePwdModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔐 修改密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePwdForm">
+                    <input type="hidden" id="pwd_userId">
+                    <div class="mb-3">
+                        <label>正在修改用户：</label>
+                        <input type="text" class="form-control-plaintext fw-bold" id="pwd_username" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>原密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="oldPassword" placeholder="请输入当前使用的密码">
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <label>新密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="newPassword" placeholder="请输入新密码">
+                    </div>
+                    <div class="mb-3">
+                        <label>确认新密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirmNewPassword" placeholder="再次输入新密码">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitChangePwd()">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
     function showAddModal() { $("#userModal").modal("show"); }
 
+    // === 改动3：前端实时搜索逻辑 ===
+    function filterTable() {
+        var value = $("#searchInput").val().toLowerCase();
+        $("#userTableBody tr").filter(function() {
+            // 搜索这一行的所有文本是否包含关键词
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    }
+
+    // === 新增用户 ===
     function saveUser() {
+        var pwd = $("#inputPwd").val();
+        var confirmPwd = $("#inputPwdConfirm").val();
+        if (!pwd) { alert("密码不能为空！"); return; }
+        if (pwd !== confirmPwd) { alert("❌ 两次输入的密码不一致！"); return; }
+
         var data = {};
         $("#userForm").serializeArray().forEach(item => data[item.name] = item.value);
+
         $.ajax({
             url: "/sysUser/add",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify(data),
             success: function(res) {
-                if(res.success) location.reload();
-                else alert(res.msg);
+                if(res.success) { location.reload(); } else { alert("创建失败：" + res.msg); }
             }
         });
     }
 
+    // === 删除用户 ===
     function deleteUser(id) {
         if(confirm("确定删除该用户吗？")) {
             $.ajax({
                 url: "/sysUser/delete/" + id,
                 type: "POST",
                 success: function(res) {
-                    if(res.success) location.reload();
-                    else alert(res.msg);
+                    if(res.success) location.reload(); else alert(res.msg);
                 }
             });
         }
+    }
+
+    // === 打开编辑弹窗 ===
+    function openEditModal(id, username, realName, role) {
+        $("#edit_id").val(id);
+        $("#edit_username").val(username);
+        $("#edit_realName").val(realName);
+        $("#edit_role").val(role);
+        $("#editUserModal").modal("show");
+    }
+
+    // === 提交编辑 ===
+    function submitUpdate() {
+        var data = {};
+        $("#editUserForm").serializeArray().forEach(item => data[item.name] = item.value);
+        $.ajax({
+            url: "/sysUser/update",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(res) {
+                if(res.success) { location.reload(); } else { alert(res.msg); }
+            }
+        });
+    }
+
+    // === 打开改密弹窗 ===
+    function openChangePwdModal(id, username) {
+        $("#pwd_userId").val(id);
+        $("#pwd_username").val(username);
+        $("#oldPassword").val("");
+        $("#newPassword").val("");
+        $("#confirmNewPassword").val("");
+        $("#changePwdModal").modal("show");
+    }
+
+    // === 提交改密 ===
+    function submitChangePwd() {
+        var id = $("#pwd_userId").val();
+        var oldPwd = $("#oldPassword").val();
+        var newPwd = $("#newPassword").val();
+        var confirmPwd = $("#confirmNewPassword").val();
+
+        if (!oldPwd || !newPwd) { alert("密码不能为空！"); return; }
+        if (newPwd !== confirmPwd) { alert("❌ 两次新密码不一致！"); return; }
+        if (oldPwd === newPwd) { alert("⚠️ 新旧密码不能相同！"); return; }
+
+        var data = { id: id, oldPassword: oldPwd, newPassword: newPwd };
+        $.ajax({
+            url: "/sysUser/changePassword",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function(res) {
+                if (res.success) {
+                    alert("✅ " + res.msg);
+                    $("#changePwdModal").modal("hide");
+                } else {
+                    alert(res.msg);
+                }
+            }
+        });
     }
 </script>
 </body>

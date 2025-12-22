@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('财务报表')}"></head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('finance')}"></nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">📊 财务管理中心</h1>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card card-erp bg-success text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-wallet2"></i> 总销售收入</h5>
+                            <p class="display-6 fw-bold" id="totalRevenue">¥0.00</p>
+                            <small>历史累计销售总额</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-erp bg-warning text-dark h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-cart-x"></i> 总采购支出</h5>
+                            <p class="display-6 fw-bold" id="totalCost">¥0.00</p>
+                            <small>历史累计进货成本</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-erp bg-primary text-white h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-piggy-bank"></i> 总毛利润</h5>
+                            <p class="display-6 fw-bold" id="totalProfit">¥0.00</p>
+                            <small>销售额 - 商品成本</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-erp">
+                <div class="card-header bg-white fw-bold">
+                    📉 近7天 收支走势对比
+                </div>
+                <div class="card-body">
+                    <div id="financeChart" style="width: 100%; height: 450px;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: "/finance/data",
+            type: "GET",
+            success: function(res) {
+                // 1. 填充卡片数字
+                $("#totalRevenue").text("¥" + res.totalRevenue.toFixed(2));
+                $("#totalCost").text("¥" + res.totalCost.toFixed(2));
+                $("#totalProfit").text("¥" + res.totalProfit.toFixed(2));
+
+                // 2. 渲染图表
+                initFinanceChart(res);
+            }
+        });
+    });
+
+    function initFinanceChart(data) {
+        var myChart = echarts.init(document.getElementById('financeChart'));
+        var option = {
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['收入 (Sales)', '支出 (Inbound)'] },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: data.dates
+            },
+            yAxis: { type: 'value' },
+            series: [
+                {
+                    name: '收入 (Sales)',
+                    type: 'line',
+                    data: data.incomes,
+                    smooth: true,
+                    itemStyle: { color: '#198754' }, // 绿色
+                    areaStyle: { opacity: 0.1 }
+                },
+                {
+                    name: '支出 (Inbound)',
+                    type: 'line',
+                    data: data.expenses,
+                    smooth: true,
+                    itemStyle: { color: '#ffc107' }, // 黄色
+                    lineStyle: { type: 'dashed' }
+                }
+            ]
+        };
+        myChart.setOption(option);
+        window.onresize = function() { myChart.resize(); };
+    }
+</script>
+</body>
+</html>

@@ -75,4 +75,8 @@ public class Sale implements Serializable {
      */
     @TableField("sale_time")
     private LocalDateTime saleTime;
+
+    // 在类的最后，Getter/Setter 之前加入
+    @TableField(exist = false) // 表示数据库表中不存在此列
+    private String productName;
 }

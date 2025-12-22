@@ -27,9 +27,10 @@
                             <thead class="table-light">
                             <tr>
                                 <th>单号ID</th>
-                                <th>商品ID</th>
+                                <th>商品名称</th>
                                 <th>进货数量</th>
                                 <th>进货单价</th>
+                                <th>总金额</th>
                                 <th>创建时间</th>
                                 <th>状态</th>
                                 <th>操作</th>
@@ -38,9 +39,10 @@
                             <tbody>
                             <tr th:each="item : ${inbounds}">
                                 <td th:text="${item.id}"></td>
-                                <td th:text="${item.productId}"></td>
+                                <td class="fw-bold" th:text="${item.productName}"></td>
                                 <td th:text="${item.quantity}"></td>
                                 <td th:text="${item.purchasePrice}"></td>
+                                <td class="fw-bold text-primary" th:text="${item.totalAmount}"></td>
                                 <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
 
                                 <td th:switch="${item.status}">
@@ -51,17 +53,18 @@
 
                                 <td>
                                     <button th:if="${item.status == 0}"
-                                            class="btn btn-sm btn-outline-success"
+                                            class="btn btn-sm btn-light text-success"
                                             th:onclick="'confirmInbound(' + ${item.id} + ')'">
-                                        📦 确认收货
+                                        <i class="bi bi-box-seam"></i> 确认收货
                                     </button>
                                     <span th:if="${item.status == 1}" class="text-muted small">无操作</span>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(inbounds)}">
-                                <td colspan="7" class="text-center text-muted py-3">暂无进货记录</td>
+                                <td colspan="8" class="text-center text-muted py-3">暂无进货记录</td>
                             </tr>
                             </tbody>
+                        </table>
                         </table>
                     </div>
                 </div>

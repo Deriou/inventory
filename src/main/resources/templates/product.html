@@ -58,8 +58,15 @@
                                 </td>
 
                                 <td>
-                                    <button class="btn btn-sm btn-light text-primary">编辑</button>
-                                    <button class="btn btn-sm btn-light text-danger">下架</button>
+                                    <button class="btn btn-sm btn-light text-primary"
+                                            th:onclick="openEditModal([[${p.id}]], [[${p.name}]], [[${p.costPrice}]], [[${p.salePrice}]], [[${p.stock}]], [[${p.warningNum}]], [[${p.supplier}]])">
+                                        编辑
+                                    </button>
+
+                                    <button class="btn btn-sm btn-light text-danger"
+                                            th:onclick="deleteProduct([[${p.id}]])">
+                                        下架
+                                    </button>
                                 </td>
                             </tr>
                             </tbody>
@@ -118,10 +125,59 @@
     </div>
 </div>
 
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑商品信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" name="id" id="edit_id">
+
+                    <div class="mb-3">
+                        <label class="form-label">商品名称</label>
+                        <input type="text" class="form-control" name="name" id="edit_name" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">进货成本</label>
+                            <input type="number" class="form-control" name="costPrice" id="edit_costPrice" step="0.01">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">零售价格</label>
+                            <input type="number" class="form-control" name="salePrice" id="edit_salePrice" step="0.01">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">当前库存</label>
+                            <input type="number" class="form-control" name="stock" id="edit_stock">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">预警阈值</label>
+                            <input type="number" class="form-control" name="warningNum" id="edit_warningNum">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">供应商</label>
+                        <input type="text" class="form-control" name="supplier" id="edit_supplier">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitUpdate()">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
-    // JS 逻辑保持不变
+    // 1. 新增商品 (你原有的代码，保持不变)
     function saveProduct() {
         var formData = {};
         $("#addForm").serializeArray().forEach(item => formData[item.name] = item.value);
@@ -131,10 +187,63 @@
             contentType: "application/json",
             data: JSON.stringify(formData),
             success: function(res) {
+                if (res.success) { location.reload(); } else { alert("保存失败"); }
+            }
+        });
+    }
+
+    // === 👇 新增以下代码 👇 ===
+
+    // 2. 打开编辑弹窗（把表格里的数据填入输入框）
+    function openEditModal(id, name, cost, sale, stock, warning, supplier) {
+        // 给表单赋值
+        $("#edit_id").val(id);
+        $("#edit_name").val(name);
+        $("#edit_costPrice").val(cost);
+        $("#edit_salePrice").val(sale);
+        $("#edit_stock").val(stock);
+        $("#edit_warningNum").val(warning);
+        $("#edit_supplier").val(supplier);
+
+        // 显示弹窗
+        $("#editModal").modal("show");
+    }
+
+    // 3. 提交修改
+    function submitUpdate() {
+        var formData = {};
+        $("#editForm").serializeArray().forEach(item => formData[item.name] = item.value);
+
+        $.ajax({
+            url: "/product/update", // 调用刚才写的后端接口
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(res) {
                 if (res.success) {
+                    alert("修改成功！");
                     location.reload();
                 } else {
-                    alert("保存失败");
+                    alert("修改失败：" + res.msg);
+                }
+            }
+        });
+    }
+
+    // 4. 下架（删除）商品
+    function deleteProduct(id) {
+        if (!confirm("确定要下架（删除）该商品吗？此操作不可恢复！")) {
+            return;
+        }
+        $.ajax({
+            url: "/product/delete/" + id,
+            type: "POST",
+            success: function(res) {
+                if (res.success) {
+                    alert("已下架！");
+                    location.reload();
+                } else {
+                    alert("操作失败：" + res.msg);
                 }
             }
         });

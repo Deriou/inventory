@@ -1,6 +1,8 @@
 package com.inventory.controller;
 
+import com.inventory.entity.Inbound;
 import com.inventory.entity.Product;
+import com.inventory.entity.Sale;
 import com.inventory.entity.SysUser;
 import com.inventory.service.IInboundService;
 import com.inventory.service.IProductService;
@@ -9,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class PageController {
@@ -36,8 +42,20 @@ public class PageController {
 
     @GetMapping("/page/inbound")
     public String inboundPage(Model model) {
-        model.addAttribute("inbounds",inboundService.list());
-        model.addAttribute("products",productService.list());
+        List<Inbound> inbounds = inboundService.list();
+        List<Product> products = productService.list();
+
+        // 创建一个 Map 用于快速查找：ID -> 名称
+        Map<Long, String> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, Product::getName));
+
+        // 遍历进货单，填入商品名称
+        for (Inbound i : inbounds) {
+            i.setProductName(productMap.getOrDefault(i.getProductId(), "未知商品"));
+        }
+
+        model.addAttribute("inbounds", inbounds);
+        model.addAttribute("products", products); // 这个留着给弹窗下拉框用
         return "inbound";
     }
 
@@ -49,9 +67,20 @@ public class PageController {
     // 1. 销售历史列表页 (新)
     @GetMapping("/page/sale")
     public String saleListPage(Model model) {
-        // 获取所有销售记录
-        model.addAttribute("sales", saleService.list());
-        return "sale"; // 对应 templates/sale.html
+        List<Sale> sales = saleService.list();
+        List<Product> products = productService.list();
+
+        // 同理，创建映射
+        Map<Long, String> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, Product::getName));
+
+        // 遍历销售单，填入商品名称
+        for (Sale s : sales) {
+            s.setProductName(productMap.getOrDefault(s.getProductId(), "未知商品"));
+        }
+
+        model.addAttribute("sales", sales);
+        return "sale";
     }
 
     // 2. 收银台/新增销售页 (原有的改为这个路径)
@@ -85,5 +114,15 @@ public class PageController {
         }
         model.addAttribute("users", sysUserService.list()); // 注入所有用户数据
         return "sys_user"; // 对应 sys_user.html
+    }
+
+    @GetMapping("/page/finance")
+    public String financePage(jakarta.servlet.http.HttpSession session) {
+        // 简单权限校验：只有管理员(1)和财务(3)能进
+        com.inventory.entity.SysUser user = (com.inventory.entity.SysUser) session.getAttribute("currentUser");
+        if (user == null || (user.getRole() != 1 && user.getRole() != 3)) {
+            return "redirect:/"; // 没权限踢回首页
+        }
+        return "finance"; // 对应 templates/finance.html
     }
 }

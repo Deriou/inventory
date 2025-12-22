@@ -51,6 +51,12 @@
                 </a>
             </li>
 
+            <li class="nav-item" th:if="${session.currentUser != null && (session.currentUser.role == 1 || session.currentUser.role == 3)}">
+                <a class="nav-link" th:classappend="${activeUri == 'finance'} ? 'active'" href="/page/finance">
+                    <i class="bi bi-currency-yen"></i> 财务管理
+                </a>
+            </li>
+
             <li class="nav-item mt-4">
                 <a class="nav-link text-danger" href="#" onclick="logout()">
                     <i class="bi bi-box-arrow-right"></i> 退出登录
@@ -68,11 +74,7 @@
 </nav>
 
 <header class="navbar navbar-light sticky-top bg-white flex-md-nowrap p-0 shadow-sm" th:fragment="topbar">
-    <div class="container-fluid">
-        <span class="navbar-text ms-auto px-3">
-            <i class="bi bi-person-circle"></i> 管理员 Eric
-        </span>
-    </div>
+
 </header>
 
 </body>
