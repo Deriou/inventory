@@ -1,190 +1,95 @@
-/* src/main/resources/static/css/dashboard.css */
 
 :root {
-    --sidebar-width: 260px; /* 稍微宽一点，更大气 */
-    --header-height: 70px;
-
-    /* --- 现代圆角风格配色 --- */
-    --primary-color: #4e73df; /* 主题蓝 */
-    --sidebar-bg: #ffffff;
-
-    /* 默认文字颜色 */
-    --sidebar-text: #6c757d;
-
-    /* 选中/高亮时的背景色 (极浅的蓝) */
-    --active-bg: #eef2ff;
-
-    /* 选中/高亮时的文字颜色 (深蓝) */
-    --active-text: #4e73df;
-
-    --border-radius: 10px; /* 大圆角 */
-    --transition-speed: 0.2s;
+    --sidebar-width: 260px; /* 侧边栏固定宽度 */
+    --header-height: 70px;  /* 顶栏高度 */
+    --primary-color: #4e73df;
+    --border-radius: 10px;
 }
 
 body {
-    background-color: #f8f9fc;
-    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #5a5c69;
+    background-color: #f3f4f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden; /* 防止横向滚动条 */
 }
 
-/* --- 侧边栏容器 --- */
+/* --- 1. 侧边栏 (固定在左侧) --- */
 .sidebar {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
-    width: var(--sidebar-width);
-    background-color: var(--sidebar-bg);
+    width: var(--sidebar-width) !important; /* 强制宽度 */
+    background-color: #ffffff;
     z-index: 1000;
-    border-right: 1px solid #f0f0f0; /* 极淡的边框 */
+    border-right: 1px solid #ebedf0;
     overflow-y: auto;
-    padding-bottom: 40px;
+    padding: 10px 0;
 }
 
-/* Logo 区域 */
-.sidebar-brand {
-    height: var(--header-height);
-    display: flex;
-    align-items: center;
-    padding-left: 24px; /* 左对齐 */
-    color: #333; /* 深黑Logo文字 */
-    font-size: 1.1rem;
-    font-weight: 800;
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    background-color: #fff;
-    /* 取消下划线，更干净 */
-}
-
-/* --- 菜单项核心样式 (圆角+悬浮) --- */
-.sidebar .nav-link {
-    color: var(--sidebar-text);
-    font-weight: 600;
-    font-size: 0.95rem;
-    padding: 12px 16px;
-
-    /* 关键：悬浮圆角效果 */
-    margin: 4px 16px; /* 上下留空，左右缩进 */
-    border-radius: var(--border-radius);
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all var(--transition-speed);
-
-    /* 禁止文字选中 */
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-/* 鼠标悬停 */
-.sidebar .nav-link:hover {
-    color: var(--active-text);
-    background-color: #f8f9fa; /* 极浅灰 */
-}
-
-/* --- 状态 1: 父菜单展开 (High Light Parent) --- */
-/* 当 data-bs-toggle="collapse" 的元素没有 .collapsed 类时，说明它展开了 */
-.sidebar .nav-link:not(.collapsed) {
-    background-color: var(--active-bg); /* 浅蓝背景 */
-    color: var(--active-text);          /* 深蓝文字 */
-}
-
-/* --- 状态 2: 子菜单被选中 (High Light Child) --- */
-.sidebar .nav-link.active {
-    background-color: var(--active-bg);
-    color: var(--active-text);
-    font-weight: 700;
-}
-
-/* 图标样式 */
-.sidebar .nav-link i.bi-icon {
-    margin-right: 12px;
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
-    color: #b0b3c5; /* 默认图标是浅灰色 */
-    transition: color 0.2s;
-}
-
-/* 选中状态下图标变蓝 */
-.sidebar .nav-link:not(.collapsed) i.bi-icon,
-.sidebar .nav-link.active i.bi-icon,
-.sidebar .nav-link:hover i.bi-icon {
-    color: var(--primary-color);
-}
-
-/* 小箭头 */
-.arrow-icon {
-    font-size: 0.75rem;
-    transition: transform 0.3s;
-    color: #d1d3e2;
-}
-/* 展开时箭头旋转 */
-.nav-link:not(.collapsed) .arrow-icon {
-    transform: rotate(90deg);
-    color: var(--primary-color);
-}
-
-/* --- 子菜单容器 --- */
-.sidebar .collapse {
-    background-color: transparent; /* 透明背景 */
-}
-
-/* 子菜单项样式微调 */
-.sidebar .collapse .nav-link {
-    padding-left: 52px; /* 缩进 */
-    padding-top: 10px;
-    padding-bottom: 10px;
-    font-size: 0.9rem;
-    margin-top: 2px;
-}
-
-/* 分组小标题 */
-.sidebar-heading {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: #b7b9cc;
-    font-weight: 700;
-    margin: 20px 24px 8px; /* 调整间距 */
-}
-
-/* --- 主内容区 (防遮挡) --- */
-main {
-    margin-left: var(--sidebar-width);
-    padding-top: 100px; /* 顶部留白 */
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-bottom: 30px;
-    min-height: 100vh;
-}
-
+/* --- 2. 顶部导航 (固定在右侧上方) --- */
 .navbar-top {
     position: fixed;
     top: 0;
     right: 0;
-    left: var(--sidebar-width);
+    /* 关键：左边距离 = 侧边栏宽度 */
+    left: var(--sidebar-width) !important;
     height: var(--header-height);
-    background-color: #fff; /* 纯白顶栏 */
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     z-index: 900;
-    /* 取消阴影，改用底边框，更现代 */
-    border-bottom: 1px solid #f0f0f0;
-    padding: 0 2rem;
+    border-bottom: 1px solid #ebedf0;
+    padding: 0 40px; /* 内部左右留白 */
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 
-/* 卡片优化：更平滑的阴影 */
-.card-erp {
-    border: none;
-    box-shadow: 0 0.15rem 1rem 0 rgba(58, 59, 69, 0.05);
-    border-radius: 12px; /* 卡片也用圆角 */
+/* --- 3. 主内容区 (彻底修复遮挡问题) --- */
+main {
+    /* 关键：左边距 = 侧边栏宽度，把内容硬推到右边 */
+    margin-left: var(--sidebar-width) !important;
+
+    /* 关键：内容区的内边距 (呼吸感) */
+    padding: 30px !important;
+    padding-top: 100px !important; /* 顶部留出导航栏的高度 */
+
+    min-height: 100vh;
+    width: auto !important; /* 自动填满剩余空间 */
+    background-color: #f3f4f6;
 }
-.card-erp .card-header {
-    background-color: #fff;
-    border-bottom: 1px solid #f8f9fc;
-    font-weight: 700;
-    padding: 1.2rem;
-    border-radius: 12px 12px 0 0;
+
+/* --- 其他装饰样式 --- */
+.sidebar-brand {
+    height: 60px;
+    display: flex; align-items: center; padding-left: 24px;
+    font-size: 1.2rem; font-weight: 800; color: #333; text-decoration: none;
+    margin-bottom: 10px;
 }
+
+.sidebar .nav-link {
+    color: #64748b; font-weight: 600;
+    padding: 12px 18px; margin: 4px 16px;
+    border-radius: var(--border-radius);
+    display: flex; align-items: center; justify-content: space-between;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.sidebar .nav-link:hover { background-color: #f8f9fa; color: #334155; }
+
+/* 选中高亮 */
+.sidebar .nav-link[data-bs-toggle="collapse"]:not(.collapsed),
+.sidebar .nav-link.active {
+    background-color: #eef2ff; color: #4e73df;
+}
+.sidebar .nav-link i.bi-icon { margin-right: 12px; font-size: 1.1rem; color: #94a3b8; }
+.sidebar .nav-link.active i.bi-icon, .sidebar .nav-link:not(.collapsed) i.bi-icon { color: #4e73df; }
+
+.arrow-icon { font-size: 0.8rem; transition: transform 0.2s; opacity: 0.5; }
+.nav-link:not(.collapsed) .arrow-icon { transform: rotate(90deg); opacity: 1; color: #4e73df; }
+
+.sidebar .collapse .nav-link { padding-left: 54px; font-size: 0.9rem; margin-top: 2px; }
+.sidebar-heading { font-size: 0.75rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin: 24px 24px 8px; }
+
+.card-erp { border: none; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); background: #fff; overflow: hidden; }
+.card-erp .card-header { background: #fff; border-bottom: 1px solid #f1f5f9; padding: 20px 24px; font-weight: 700; color: #334155; }
+.card-erp .card-body { padding: 24px; }

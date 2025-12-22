@@ -2,63 +2,126 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common :: commonHead('商品录入')}"></head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('product', 'product_add')}"></nav>
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div th:replace="~{common :: topbar}"></div>
-            <div class="pt-3 pb-2 mb-3"><h1 class="h4">商品录入</h1></div>
 
-            <div class="card card-erp" style="max-width: 800px;">
-                <div class="card-body">
-                    <form id="addProductForm">
-                        <div class="mb-3">
-                            <label class="form-label">商品名称</label>
-                            <input type="text" class="form-control" name="name" required>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">进货价</label>
-                                <input type="number" class="form-control" name="costPrice" step="0.01">
-                            </div>
-                            <div class="col">
-                                <label class="form-label">零售价</label>
-                                <input type="number" class="form-control" name="salePrice" step="0.01">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">初始库存</label>
-                                <input type="number" class="form-control" name="stock" value="0">
-                            </div>
-                            <div class="col">
-                                <label class="form-label">预警数量</label>
-                                <input type="number" class="form-control" name="warningNum" value="10">
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">供应商</label>
-                            <input type="text" class="form-control" name="supplier">
-                        </div>
-                        <button type="button" onclick="saveProduct()" class="btn btn-primary">保存商品</button>
-                    </form>
-                </div>
+<div>
+    <nav th:replace="~{common :: sidebar('product', 'product_add')}"></nav>
+
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">录入新商品</h1>
+                <span class="text-muted small">建立新的商品档案信息</span>
             </div>
-        </main>
-    </div>
+            <a href="/page/product/list" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="bi bi-arrow-return-left me-1"></i> 返回列表
+            </a>
+        </div>
+
+        <div class="card card-erp" style="max-width: 900px;">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary">基本信息填写</h6>
+            </div>
+            <div class="card-body p-4">
+                <form id="addProductForm">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-gray-700">商品名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" name="name"  required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-gray-700">销售价格 (¥) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">¥</span>
+                                <input type="number" class="form-control border-start-0 ps-0" name="salePrice" step="0.01" placeholder="0.00" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-gray-700">进货成本 (¥) </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">¥</span>
+                                <input type="number" class="form-control border-start-0 ps-0" name="costPrice" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-gray-700">库存预警数</label>
+                            <input type="number" class="form-control" name="warningNum" value="10">
+                            <div class="form-text small">库存低于此数量时，系统会提示缺货。</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-gray-700">初始库存</label>
+                            <input type="number" class="form-control" name="stock" value="0" placeholder="默认为0">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-gray-700">供应商信息 / 备注</label>
+                        <textarea class="form-control" name="supplier" rows="3" placeholder="在此记录供应商联系方式、进货渠道等信息..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end pt-3 border-top">
+                        <button type="reset" class="btn btn-light me-3 px-4">重置</button>
+                        <button type="button" onclick="submitProduct()" class="btn btn-primary px-5 shadow-sm">
+                            <i class="bi bi-save me-2"></i> 保存并录入
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
 </div>
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<div th:replace="~{common :: commonScripts}"></div>
+
 <script>
-    function saveProduct() {
+    function submitProduct() {
+        // 1. 获取关键字段
+        var name = $("input[name='name']").val();
+        var price = $("input[name='salePrice']").val();
+
+        // 2. 简单校验
+        if(!name) {
+            alert("请填写商品名称！");
+            return;
+        }
+        if(!price) {
+            alert("请填写销售价格！");
+            return;
+        }
+
+        // 3. 序列化表单
         var formData = {};
         $("#addProductForm").serializeArray().forEach(item => formData[item.name] = item.value);
+
+        // 4. 发送请求
         $.ajax({
-            url: "/product/add", type: "POST", contentType: "application/json",
+            url: "/product/add",
+            type: "POST",
+            contentType: "application/json",
             data: JSON.stringify(formData),
             success: function(res) {
-                if(res.success) { alert("保存成功"); location.href="/page/product/list"; }
-                else { alert("失败"); }
+                if(res.success) {
+                    if(confirm("商品录入成功！是否继续录入下一个？")) {
+                        // 继续录入：只重置表单，不跳转
+                        $("#addProductForm")[0].reset();
+                        $("input[name='name']").focus();
+                    } else {
+                        // 不继续：跳转回列表
+                        location.href = "/page/product/list";
+                    }
+                } else {
+                    alert("录入失败: " + res.msg);
+                }
+            },
+            error: function() {
+                alert("系统错误，请联系管理员");
             }
         });
     }

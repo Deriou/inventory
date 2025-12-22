@@ -1,99 +1,144 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{common :: commonHead('仪表盘')}"></head>
+<head th:replace="~{common :: commonHead('ERP系统 - 仪表盘')}"></head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('index', 'index')}"></nav>
+<div>
+    <nav th:replace="~{common :: sidebar('index', 'index')}"></nav>
 
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
 
-            <div th:replace="~{common :: topbar}"></div>
-
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">仪表盘</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <button type="button" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-download"></i> 导出报表
-                    </button>
-                </div>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-2">
+            <h1 class="h4">经营概况</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <button type="button" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-calendar"></i> 本周数据
+                </button>
             </div>
+        </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card card-erp bg-primary text-white h-100">
-                        <div class="card-body">
-                            <h6 class="text-uppercase small">今日销售额</h6>
-                            <h2 class="display-6 fw-bold mt-2">¥1,203</h2>
-                            <small class="opacity-50">比昨日 +15%</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-erp bg-success text-white h-100">
-                        <div class="card-body">
-                            <h6 class="text-uppercase small">本月订单</h6>
-                            <h2 class="display-6 fw-bold mt-2">45 单</h2>
-                            <small class="opacity-50">完成率 98%</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-erp bg-warning text-dark h-100">
-                        <div class="card-body">
-                            <h6 class="text-uppercase small">库存预警</h6>
-                            <h2 class="display-6 fw-bold mt-2">3 项</h2>
-                            <small>需尽快补货</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-erp bg-info text-white h-100">
-                        <div class="card-body">
-                            <h6 class="text-uppercase small">待入库</h6>
-                            <h2 class="display-6 fw-bold mt-2">2 单</h2>
-                            <small class="opacity-50">点击去处理</small>
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card card-erp h-100 border-start border-4 border-primary">
+                    <div class="card-body">
+                        <div class="text-uppercase text-primary fw-bold small mb-1">今日销售额</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="h3 mb-0 fw-bold">¥ 2,580</div>
+                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-currency-yen"></i></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card card-erp mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-graph-up"></i> 近 7 天销售趋势</span>
-                </div>
-                <div class="card-body">
-                    <div id="mainChart" style="width: 100%; height: 350px;"></div>
+            <div class="col-md-3">
+                <div class="card card-erp h-100 border-start border-4 border-success">
+                    <div class="card-body">
+                        <div class="text-uppercase text-success fw-bold small mb-1">待入库订单</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="h3 mb-0 fw-bold">12 单</div>
+                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-receipt"></i></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-        </main>
-    </div>
+            <div class="col-md-3">
+                <div class="card card-erp h-100 border-start border-4 border-info">
+                    <div class="card-body">
+                        <div class="text-uppercase text-info fw-bold small mb-1">在售商品数</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="h3 mb-0 fw-bold">856 件</div>
+                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-box-seam"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-erp h-100 border-start border-4 border-danger">
+                    <div class="card-body">
+                        <div class="text-uppercase text-danger fw-bold small mb-1">库存告急</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="h3 mb-0 fw-bold text-danger">5 种</div>
+                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 fw-bold text-primary">快捷入口</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <a href="/page/sale/create" class="btn btn-outline-primary py-2 text-start">
+                                <i class="bi bi-cart4 me-2"></i> 前台收银 (开单)
+                            </a>
+                            <a href="/page/product/add" class="btn btn-outline-success py-2 text-start">
+                                <i class="bi bi-plus-circle me-2"></i> 录入新商品
+                            </a>
+                            <a href="/page/inbound/create" class="btn btn-outline-warning py-2 text-start">
+                                <i class="bi bi-truck me-2"></i> 采购进货
+                            </a>
+                            <a href="/page/stock/warning" class="btn btn-outline-danger py-2 text-start">
+                                <i class="bi bi-bell me-2"></i> 查看缺货商品
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">最近操作记录</h6>
+                        <a href="#" class="small text-decoration-none">查看全部</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">操作类型</th>
+                                <th>内容</th>
+                                <th>操作人</th>
+                                <th>时间</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-success">销售</span></td>
+                                <td>销售出库：iPhone 15 Pro x 1</td>
+                                <td>管理员</td>
+                                <td class="text-muted small">10分钟前</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-primary">入库</span></td>
+                                <td>采购入库：可口可乐 x 50箱</td>
+                                <td>张三</td>
+                                <td class="text-muted small">1小时前</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-warning text-dark">修改</span></td>
+                                <td>更新商品价格：MacBook Air</td>
+                                <td>管理员</td>
+                                <td class="text-muted small">昨天</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
 </div>
 
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
-
-<script>
-    // 简单的图表初始化 (为了不报错，先写死数据)
-    var myChart = echarts.init(document.getElementById('mainChart'));
-    var option = {
-        tooltip: { trigger: 'axis' },
-        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'category', boundaryGap: false, data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
-        yAxis: { type: 'value' },
-        series: [{
-            name: '销售额', type: 'line', smooth: true,
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
-            areaStyle: { opacity: 0.3 },
-            itemStyle: { color: '#4e73df' }
-        }]
-    };
-    myChart.setOption(option);
-    window.onresize = function() { myChart.resize(); };
-</script>
+<div th:replace="~{common :: commonScripts}"></div>
 
 </body>
 </html>

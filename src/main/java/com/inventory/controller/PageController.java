@@ -44,23 +44,6 @@ public class PageController {
         return "index";
     }
 
-    //商品模块
-    @GetMapping("/page/product/list")
-    public String productList(Model model) {
-        model.addAttribute("products",productService.list());
-        model.addAttribute("activeGroup", "product");
-        model.addAttribute("activeUri", "product_list");
-        return "product_list";
-    }
-
-    @GetMapping("/page/product/add")
-    public String productAdd(Model model) {
-        model.addAttribute("products", productService.list());
-        model.addAttribute("activeGroup", "inbound");
-        model.addAttribute("activeUri", "inbound_create");
-        return "inbound_create";
-    }
-
     //采购模块
     @GetMapping("/page/inbound/create")
     public String inboundCreate(Model model) {

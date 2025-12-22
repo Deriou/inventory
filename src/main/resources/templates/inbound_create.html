@@ -2,73 +2,105 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common :: commonHead('采购下单')}"></head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('inbound', 'inbound_create')}"></nav>
 
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div th:replace="~{common :: topbar}"></div>
+<div>
+    <nav th:replace="~{common :: sidebar('inbound', 'inbound_create')}"></nav>
 
-            <div class="pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h4">创建采购订单</h1>
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">创建采购订单</h1>
+                <span class="text-muted small">向供应商发起新的进货申请</span>
             </div>
+            <a href="/page/inbound/list" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="bi bi-list-ul me-1"></i> 查看采购记录
+            </a>
+        </div>
 
-            <div class="card card-erp" style="max-width: 800px;">
-                <div class="card-body">
-                    <form id="createInboundForm">
-                        <div class="mb-3">
-                            <label class="form-label">选择商品</label>
-                            <select class="form-select" name="productId">
-                                <option th:each="p : ${products}"
-                                        th:value="${p.id}"
-                                        th:text="${p.name} + ' (当前库存: ' + ${p.stock} + ')'">
-                                </option>
-                            </select>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">采购数量</label>
-                                <input type="number" class="form-control" name="quantity" value="100" required>
-                            </div>
-                            <div class="col">
-                                <label class="form-label">进货单价</label>
-                                <input type="number" class="form-control" name="purchasePrice" step="0.01" required>
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">备注说明</label>
-                            <textarea class="form-control" rows="3" placeholder="可选填"></textarea>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-secondary me-2">取消</button>
-                            <button type="button" onclick="submitInbound()" class="btn btn-primary">提交订单</button>
-                        </div>
-                    </form>
-                </div>
+        <div class="card card-erp" style="max-width: 800px;">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary">填写订单信息</h6>
             </div>
-        </main>
-    </div>
+            <div class="card-body p-4">
+                <form id="createInboundForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-gray-700">选择采购商品 <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg" name="productId" required>
+                            <option value="" selected disabled>请选择商品...</option>
+                            <option th:each="p : ${products}"
+                                    th:value="${p.id}"
+                                    th:text="|${p.name} (当前库存: ${p.stock})|">
+                            </option>
+                        </select>
+                        <div class="form-text">如果没有找到商品，请先去[商品管理]中录入。</div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-gray-700">采购数量 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="quantity" placeholder="请输入正整数" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-gray-700">进货单价 (¥) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">¥</span>
+                                <input type="number" class="form-control border-start-0 ps-0" name="purchasePrice" step="0.01" placeholder="0.00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-gray-700">订单备注</label>
+                        <textarea class="form-control" name="remark" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end pt-3 border-top">
+                        <button type="reset" class="btn btn-light me-3 px-4">重置</button>
+                        <button type="button" onclick="submitInbound()" class="btn btn-primary px-5 shadow-sm">
+                            <i class="bi bi-send me-2"></i> 提交订单
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
 </div>
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<div th:replace="~{common :: commonScripts}"></div>
+
 <script>
     function submitInbound() {
+        // 1. 获取表单数据
         var formData = {};
         $("#createInboundForm").serializeArray().forEach(item => formData[item.name] = item.value);
 
+        // 2. 简单校验
+        if (!formData.productId) { alert("请选择一个商品！"); return; }
+        if (!formData.quantity || formData.quantity <= 0) { alert("采购数量必须大于0！"); return; }
+        if (!formData.purchasePrice) { alert("请填写进货单价！"); return; }
+
+        // 3. 提交请求
         $.ajax({
-            url: "/inbound/add", type: "POST", contentType: "application/json",
+            url: "/inbound/add",
+            type: "POST",
+            contentType: "application/json",
             data: JSON.stringify(formData),
             success: function(res) {
                 if(res.success) {
-                    alert("下单成功！请前往[采购入库]进行收货确认。");
-                    location.href = "/page/inbound/receive";
+                    alert("下单成功！请前往 [采购入库] 页面确认收货。");
+                    location.href = "/page/inbound/receive"; // 跳转到入库页
                 } else {
-                    alert("失败: " + res.msg);
+                    alert("下单失败: " + res.msg);
                 }
+            },
+            error: function() {
+                alert("系统错误，请联系管理员");
             }
         });
     }
 </script>
+
 </body>
 </html>

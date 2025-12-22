@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <title th:text="${title}">进销存</title>
 
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
-
-    <link href="https://cdn.staticfile.org/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/css/dashboard.css" rel="stylesheet">
 </head>
 <body>
@@ -15,26 +13,21 @@
 <nav class="sidebar" th:fragment="sidebar(activeGroup, activeUri)">
     <a class="sidebar-brand" href="/">
         <div style="background:#4e73df; color:#fff; padding:6px; border-radius:8px; margin-right:10px;">
-            <i class="bi bi-bar-chart-fill"></i>
+            <i class="bi bi-box-seam-fill"></i>
         </div>
-        进销存
+        ERP系统
     </a>
 
     <div class="nav flex-column py-2">
-
         <a class="nav-link" th:classappend="${activeUri == 'index'} ? 'active'" href="/">
-            <div><i class="bi bi-grid-1x2-fill bi-icon"></i> 仪表盘</div>
+            <div><i class="bi bi-speedometer2 bi-icon"></i> 仪表盘</div>
         </a>
 
         <div class="sidebar-heading">业务管理</div>
 
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'product'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuProduct"
-           role="button" aria-expanded="false">
-            <div><i class="bi bi-box-seam bi-icon"></i> 商品管理</div>
+        <a class="nav-link" th:classappend="${activeGroup == 'product'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuProduct">
+            <div><i class="bi bi-bag bi-icon"></i> 商品管理</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuProduct" th:classappend="${activeGroup == 'product'} ? 'show'">
@@ -44,13 +37,9 @@
             </nav>
         </div>
 
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'inbound'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuInbound"
-           role="button">
-            <div><i class="bi bi-cart-check bi-icon"></i> 采购管理</div>
+        <a class="nav-link" th:classappend="${activeGroup == 'inbound'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuInbound">
+            <div><i class="bi bi-cart3 bi-icon"></i> 采购管理</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuInbound" th:classappend="${activeGroup == 'inbound'} ? 'show'">
@@ -61,29 +50,21 @@
             </nav>
         </div>
 
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'sale'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuSale"
-           role="button">
-            <div><i class="bi bi-receipt-cutoff bi-icon"></i> 销售管理</div>
+        <a class="nav-link" th:classappend="${activeGroup == 'sale'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuSale">
+            <div><i class="bi bi-shop bi-icon"></i> 销售管理</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuSale" th:classappend="${activeGroup == 'sale'} ? 'show'">
             <nav class="nav flex-column">
-                <a class="nav-link" th:classappend="${activeUri == 'sale_create'} ? 'active'" href="/page/sale/create">快捷收银</a>
+                <a class="nav-link" th:classappend="${activeUri == 'sale_create'} ? 'active'" href="/page/sale/create">收银台</a>
                 <a class="nav-link" th:classappend="${activeUri == 'sale_list'} ? 'active'" href="/page/sale/list">销售流水</a>
             </nav>
         </div>
 
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'stock'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuStock"
-           role="button">
-            <div><i class="bi bi-database bi-icon"></i> 库存中心</div>
+        <a class="nav-link" th:classappend="${activeGroup == 'stock'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuStock">
+            <div><i class="bi bi-boxes bi-icon"></i> 库存中心</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuStock" th:classappend="${activeGroup == 'stock'} ? 'show'">
@@ -93,49 +74,36 @@
             </nav>
         </div>
 
-        <div class="sidebar-heading">财务与设置</div>
-
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'finance'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuFinance"
-           role="button">
-            <div><i class="bi bi-wallet2 bi-icon"></i> 财务管理</div>
+        <a class="nav-link" th:classappend="${activeGroup == 'finance'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuFinance">
+            <div><i class="bi bi-currency-yen bi-icon"></i> 财务管理</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuFinance" th:classappend="${activeGroup == 'finance'} ? 'show'">
             <nav class="nav flex-column">
                 <a class="nav-link" th:classappend="${activeUri == 'finance_flow'} ? 'active'" href="/page/finance/flow">资金流水</a>
-                <a class="nav-link" th:classappend="${activeUri == 'finance_chart'} ? 'active'" href="/page/finance/chart">图表分析</a>
+                <a class="nav-link" th:classappend="${activeUri == 'finance_chart'} ? 'active'" href="/page/finance/chart">财务报表</a>
             </nav>
         </div>
 
-        <a class="nav-link"
-           th:classappend="${activeGroup == 'system'} ? '' : 'collapsed'"
-           data-bs-toggle="collapse"
-           href="#"
-           data-bs-target="#menuSystem"
-           role="button">
-            <div><i class="bi bi-gear bi-icon"></i> 系统设置</div>
+        <div class="sidebar-heading">系统设置</div>
+
+        <a class="nav-link" th:classappend="${activeGroup == 'system'} ? '' : 'collapsed'"
+           data-bs-toggle="collapse" href="#" data-bs-target="#menuSystem">
+            <div><i class="bi bi-gear bi-icon"></i> 系统管理</div>
             <i class="bi bi-chevron-right arrow-icon"></i>
         </a>
         <div class="collapse" id="menuSystem" th:classappend="${activeGroup == 'system'} ? 'show'">
             <nav class="nav flex-column">
-                <a class="nav-link" th:classappend="${activeUri == 'user_list'} ? 'active'" href="/page/system/user/list">用户管理</a>
+                <a class="nav-link" th:classappend="${activeUri == 'user_list'} ? 'active'" href="/page/system/user/list">用户列表</a>
                 <a class="nav-link" th:classappend="${activeUri == 'user_add'} ? 'active'" href="/page/system/user/add">新增用户</a>
             </nav>
         </div>
-
     </div>
 </nav>
 
 <header class="navbar-top" th:fragment="topbar">
-    <div class="d-flex align-items-center">
-        <i class="bi bi-search text-muted me-2"></i>
-        <input type="text" class="form-control border-0 bg-light small" placeholder="搜索功能..." style="width: 200px;">
-    </div>
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center ms-auto">
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">A</div>
@@ -153,9 +121,11 @@
 <div th:fragment="commonScripts">
     <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>
+
     <script>
         $(document).ready(function() {
-            console.log("Local Bootstrap & jQuery loaded!");
+            // 简单的 JS 验证，确保文件已加载
+            console.log("✅ 布局模板加载完毕");
         });
     </script>
 </div>
