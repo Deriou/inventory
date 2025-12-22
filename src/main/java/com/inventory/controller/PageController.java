@@ -1,11 +1,14 @@
 package com.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.inventory.entity.Inbound;
 import com.inventory.entity.Product;
 import com.inventory.entity.Sale;
 import com.inventory.entity.SysUser;
 import com.inventory.service.IInboundService;
 import com.inventory.service.IProductService;
+import com.inventory.service.ISaleService;
+import com.inventory.service.ISysUserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,108 +24,177 @@ public class PageController {
 
     @Autowired
     private IProductService productService;
-
     @Autowired
     private IInboundService inboundService;
-
     @Autowired
-    private com.inventory.service.ISysUserService sysUserService;
+    private ISaleService saleService;
+    @Autowired
+    private ISysUserService sysUserService;
 
-    @GetMapping("/page/inbound/create")
-    public String inboundCreatePage(Model model) {
-        model.addAttribute("product", productService.list());
-        return "inbound_add";
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
     }
 
-    //首页
     @GetMapping("/")
-    public String index() {
+    public String index(Model model,HttpSession session) {
+        if (session.getAttribute("currentUser") == null)
+            return "redirect:/login";
+        model.addAttribute("activeUri", "index");
         return "index";
     }
 
-    @GetMapping("/page/inbound")
-    public String inboundPage(Model model) {
-        List<Inbound> inbounds = inboundService.list();
-        List<Product> products = productService.list();
-
-        // 创建一个 Map 用于快速查找：ID -> 名称
-        Map<Long, String> productMap = products.stream()
-                .collect(Collectors.toMap(Product::getId, Product::getName));
-
-        // 遍历进货单，填入商品名称
-        for (Inbound i : inbounds) {
-            i.setProductName(productMap.getOrDefault(i.getProductId(), "未知商品"));
-        }
-
-        model.addAttribute("inbounds", inbounds);
-        model.addAttribute("products", products); // 这个留着给弹窗下拉框用
-        return "inbound";
+    //商品模块
+    @GetMapping("/page/product/list")
+    public String productList(Model model) {
+        model.addAttribute("products",productService.list());
+        model.addAttribute("activeGroup", "product");
+        model.addAttribute("activeUri", "product_list");
+        return "product_list";
     }
 
-    // 在 com.inventory.controller.PageController 中
+    @GetMapping("/page/product/add")
+    public String productAdd(Model model) {
+        model.addAttribute("products", productService.list());
+        model.addAttribute("activeGroup", "inbound");
+        model.addAttribute("activeUri", "inbound_create");
+        return "inbound_create";
+    }
 
-    @Autowired
-    private com.inventory.service.ISaleService saleService; // 确保注入了 SaleService
+    //采购模块
+    @GetMapping("/page/inbound/create")
+    public String inboundCreate(Model model) {
+        model.addAttribute("products", productService.list());
+        model.addAttribute("activeGroup", "inbound");
+        model.addAttribute("activeUri", "inbound_create");
+        return "inbound_create";
+    }
 
-    // 1. 销售历史列表页 (新)
-    @GetMapping("/page/sale")
-    public String saleListPage(Model model) {
-        List<Sale> sales = saleService.list();
+    @GetMapping("/page/inbound/receive")
+    public String inboundReceive(Model model) {
+        QueryWrapper<Inbound> query = new QueryWrapper<>();
+        query.eq("status", 0);
+        List<Inbound> list = inboundService.list(query);
+        fillInboundProductName(list);
+        model.addAttribute("inbounds", list);
+        model.addAttribute("activeGroup", "inbound");
+        model.addAttribute("activeUri", "inbound_receive");
+        return "inbound_receive";
+    }
+
+    @GetMapping("/page/inbound/list")
+    public String inboundList(Model model) {
+        List<Inbound> list = inboundService.list();
+        fillInboundProductName(list); // 填充商品名称
+
+        model.addAttribute("inbounds", list);
+        model.addAttribute("activeGroup", "inbound");
+        model.addAttribute("activeUri", "inbound_list");
+        return "inbound_list";
+    }
+
+    //销售模块
+    @GetMapping("/page/sale/create")
+    public String saleCreate(Model model) {
+        model.addAttribute("products", productService.list());
+        model.addAttribute("activeGroup", "sale");
+        model.addAttribute("activeUri", "sale_create");
+        return "sale_create";
+    }
+
+    @GetMapping("/page/sale/list")
+    public String saleList(Model model) {
+        List<Sale> list = saleService.list();
+
         List<Product> products = productService.list();
-
-        // 同理，创建映射
         Map<Long, String> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getId, Product::getName));
-
-        // 遍历销售单，填入商品名称
-        for (Sale s : sales) {
+        for (Sale s : list) {
             s.setProductName(productMap.getOrDefault(s.getProductId(), "未知商品"));
         }
 
-        model.addAttribute("sales", sales);
-        return "sale";
+        model.addAttribute("sales", list);
+        model.addAttribute("activeGroup", "sale");
+        model.addAttribute("activeUri", "sale_list");
+        return "sale_list";
     }
 
-    // 2. 收银台/新增销售页 (原有的改为这个路径)
-    @GetMapping("/page/sale/add")
-    public String saleAddPage(Model model) {
-        // 收银台需要选择商品，所以要传 product
+    //库存模块
+    @GetMapping("/page/stock/list")
+    public String stockList(Model model) {
         model.addAttribute("products", productService.list());
-        return "sale_add"; // 对应 templates/sale_add.html
+        model.addAttribute("activeGroup", "stock");
+        model.addAttribute("activeUri", "stock_list");
+        return "stock_list";
     }
 
-    // 商品管理页
-    @GetMapping("/page/product")
-    public String productPage(Model model) {
+    @GetMapping("/page/stock/warning")
+    public String stockWarning(Model model) {
         model.addAttribute("products", productService.list());
-        return "product";
+        model.addAttribute("activeGroup", "stock");
+        model.addAttribute("activeUri", "stock_warning");
+        return "stock_warning";
     }
 
-    // 在 PageController 中添加
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login"; // 对应 login.html
+    //财务模块
+    @GetMapping("/page/finance/flow")
+    public String financeFlow(Model model, HttpSession session) {
+        if (!checkPermission(session, 1, 3)) return "redirect:/";
+
+        model.addAttribute("sales", saleService.list());
+        model.addAttribute("inbounds", inboundService.list());
+        model.addAttribute("activeGroup", "finance");
+        model.addAttribute("activeUri", "finance_flow");
+        return "finance_flow";
     }
 
-    @GetMapping("/page/user")
-    public String userPage(Model model, HttpSession session) {
-        // 只有管理员(role=1)能看
+    @GetMapping("/page/finance/chart")
+    public String financeChart(Model model, HttpSession session) {
+        if (!checkPermission(session, 1, 3)) return "redirect:/";
+
+        model.addAttribute("activeGroup", "finance");
+        model.addAttribute("activeUri", "finance_chart");
+        return "finance_chart";
+    }
+
+    //系统管理
+    @GetMapping("/page/system/user/list")
+    public String userList(Model model, HttpSession session) {
+        if (!checkPermission(session, 1)) return "redirect:/"; // 只有管理员能进
+
+        model.addAttribute("users", sysUserService.list());
+        model.addAttribute("activeGroup", "system");
+        model.addAttribute("activeUri", "user_list");
+        return "user_list";
+    }
+
+    @GetMapping("/page/system/user/add")
+    public String userAdd(Model model, HttpSession session) {
+        if (!checkPermission(session, 1)) return "redirect:/"; // 只有管理员能进
+
+        model.addAttribute("activeGroup", "system");
+        model.addAttribute("activeUri", "user_add");
+        return "user_add";
+    }
+
+    //辅助方法
+    //填充进货单
+    private void fillInboundProductName(List<Inbound> inbounds) {
+        List<Product> products = productService.list();
+        Map<Long, String> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, Product::getName));
+        for (Inbound i : inbounds) {
+            i.setProductName(productMap.getOrDefault(i.getProductId(), "未知商品"));
+        }
+    }
+
+    //权限检验
+    private boolean checkPermission(HttpSession session, int... allowedRoles) {
         SysUser user = (SysUser) session.getAttribute("currentUser");
-        // 这里做个简单拦截，如果不是管理员，踢回首页 (更好的做法是用拦截器)
-        if (user == null || user.getRole() != 1) {
-            return "redirect:/";
+        if (user == null) return false;
+        for (int role : allowedRoles) {
+            if (user.getRole() == role) return true;
         }
-        model.addAttribute("users", sysUserService.list()); // 注入所有用户数据
-        return "sys_user"; // 对应 sys_user.html
-    }
-
-    @GetMapping("/page/finance")
-    public String financePage(jakarta.servlet.http.HttpSession session) {
-        // 简单权限校验：只有管理员(1)和财务(3)能进
-        com.inventory.entity.SysUser user = (com.inventory.entity.SysUser) session.getAttribute("currentUser");
-        if (user == null || (user.getRole() != 1 && user.getRole() != 3)) {
-            return "redirect:/"; // 没权限踢回首页
-        }
-        return "finance"; // 对应 templates/finance.html
+        return false;
     }
 }

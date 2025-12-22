@@ -2,39 +2,159 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>系统登录 - 进销存管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>系统登录</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+
     <style>
-        body { background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .form-signin { width: 100%; max-width: 330px; padding: 15px; margin: auto; }
+
+        body {
+            background-color: #f0f2f5;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* 可选：淡雅渐变 */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1); /* 悬浮阴影 */
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background-color: #fff;
+            padding: 40px 30px 20px;
+            text-align: center;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            color: #4e73df; /* 主题蓝 */
+            margin-bottom: 10px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .login-body {
+            padding: 20px 40px 40px;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+            border-color: #4e73df;
+        }
+
+        .btn-primary {
+            background-color: #4e73df;
+            border-color: #4e73df;
+            padding: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2653d4;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fc;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #aaa;
+            text-align: center;
+        }
     </style>
 </head>
-<body class="text-center">
-<main class="form-signin">
-    <form id="loginForm">
-        <h1 class="h3 mb-3 fw-normal">ERP 系统登录</h1>
+<body>
 
-        <div class="form-floating mb-2">
-            <input type="text" class="form-control" name="username" placeholder="账号" required>
-            <label>账号</label>
+<div class="login-card">
+    <div class="login-header">
+        <div class="logo-icon">
+            <i class="bi bi-box-seam"></i>
         </div>
-        <div class="form-floating mb-3">
-            <input type="password" class="form-control" name="password" placeholder="密码" required>
-            <label>密码</label>
-        </div>
+        <div class="login-title">夏有木 ERP</div>
+        <p class="text-muted small mt-2">企业进销存数字化管理平台</p>
+    </div>
 
-        <button class="w-100 btn btn-lg btn-primary" type="button" onclick="doLogin()">登录</button>
-        <p class="mt-5 mb-3 text-muted">&copy; 2025 Inventory System</p>
-    </form>
-</main>
+    <div class="login-body">
+        <form id="loginForm">
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text text-muted"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control" name="username" placeholder="请输入管理员账号" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="input-group">
+                    <span class="input-group-text text-muted"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control" name="password" placeholder="请输入密码" required>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="button" onclick="doLogin()">
+                    立即登录
+                </button>
+            </div>
+
+            <div class="copyright">
+                &copy; 2025 Inventory System V1.0
+            </div>
+        </form>
+    </div>
+</div>
 
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
 <script>
+    // 监听回车键，按回车直接登录，提升体验
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            doLogin();
+        }
+    });
+
     function doLogin() {
+        var username = $("input[name='username']").val();
+        var password = $("input[name='password']").val();
+
+        if(!username || !password) {
+            alert("请输入账号和密码");
+            return;
+        }
+
         var data = {
-            username: $("input[name='username']").val(),
-            password: $("input[name='password']").val()
+            username: username,
+            password: password
         };
+
+        // 按钮变更为加载状态，防止重复点击
+        var btn = $("button");
+        var originalText = btn.text();
+        btn.prop("disabled", true).text("登录中...");
+
         $.ajax({
             url: "/sysUser/login",
             type: "POST",
@@ -44,8 +164,13 @@
                 if (res.success) {
                     location.href = "/"; // 登录成功跳首页
                 } else {
-                    alert(res.msg);
+                    alert("登录失败：" + res.msg);
+                    btn.prop("disabled", false).text(originalText); // 恢复按钮
                 }
+            },
+            error: function() {
+                alert("服务器连接失败，请稍后重试");
+                btn.prop("disabled", false).text(originalText);
             }
         });
     }

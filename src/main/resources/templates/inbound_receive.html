@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('采购入库操作')}"></head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <nav th:replace="~{common :: sidebar('inbound', 'inbound_receive')}"></nav>
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div th:replace="~{common :: topbar}"></div>
+
+      <div class="pt-3 pb-2 mb-3"><h1 class="h4">待入库订单</h1></div>
+
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 此处仅显示状态为【待入库】的订单，确认货物无误后点击“确认收货”。
+      </div>
+
+      <div class="card card-erp">
+        <div class="card-body">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr><th>单号</th><th>商品</th><th>数量</th><th>时间</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${inbounds}">
+              <td th:text="'PO-' + ${i.id}"></td>
+              <td th:text="${i.productName}"></td>
+              <td th:text="${i.quantity}" class="fw-bold"></td>
+              <td th:text="${#temporals.format(i.createTime, 'MM-dd HH:mm')}"></td>
+              <td>
+                <button class="btn btn-sm btn-success" th:onclick="'confirmInbound(' + ${i.id} + ')'">
+                  <i class="bi bi-box-seam"></i> 确认收货
+                </button>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(inbounds)}">
+              <td colspan="5" class="text-center text-muted py-4">暂无待处理订单</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+  function confirmInbound(id) {
+    if(!confirm("确认货物已到并加入库存？")) return;
+    $.ajax({
+      url: "/inbound/confirm/" + id, type: "POST",
+      success: function(res) {
+        if(res.success) { alert("入库成功！"); location.reload(); }
+        else { alert("失败: " + res.msg); }
+      }
+    });
+  }
+</script>
+</body>
+</html>

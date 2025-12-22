@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('采购订单管理')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('inbound', 'inbound_list')}"></nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="pt-3 pb-2 mb-3 d-flex justify-content-between align-items-center">
+                <h1 class="h4">采购订单管理</h1>
+                <a href="/page/inbound/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增采购</a>
+            </div>
+
+            <div class="card card-erp">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr><th>单号</th><th>商品名称</th><th>数量</th><th>进价</th><th>总额</th><th>状态</th><th>时间</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="i : ${inbounds}">
+                            <td th:text="'PO-' + ${i.id}"></td>
+                            <td th:text="${i.productName}" class="fw-bold"></td>
+                            <td th:text="${i.quantity}"></td>
+                            <td th:text="${i.purchasePrice}"></td>
+                            <td th:text="${i.quantity * i.purchasePrice}"></td>
+                            <td>
+                                <span th:if="${i.status == 0}" class="badge bg-warning text-dark">待入库</span>
+                                <span th:if="${i.status == 1}" class="badge bg-success">已入库</span>
+                            </td>
+                            <td th:text="${#temporals.format(i.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

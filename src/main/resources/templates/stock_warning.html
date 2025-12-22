@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('库存预警')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('stock', 'stock_warning')}"></nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 库存预警商品</h1>
+            </div>
+
+            <div class="alert alert-warning">
+                以下商品库存低于预警线，请尽快安排采购！
+                <a href="/page/inbound/create" class="alert-link ms-2">去采购 -></a>
+            </div>
+
+            <div class="card card-erp border-danger">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr><th>商品名称</th><th>当前库存</th><th>预警阈值</th><th>缺口</th><th>供应商</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${products}" th:if="${p.stock < p.warningNum}">
+                            <td th:text="${p.name}" class="fw-bold text-danger"></td>
+                            <td th:text="${p.stock}" class="fw-bold"></td>
+                            <td th:text="${p.warningNum}"></td>
+                            <td th:text="${p.warningNum - p.stock}" class="text-danger fw-bold"></td>
+                            <td th:text="${p.supplier}"></td>
+                            <td>
+                                <a href="/page/inbound/create" class="btn btn-sm btn-outline-danger">一键补货</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{common :: commonScripts}"></div>
+</body>
+</html>

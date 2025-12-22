@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('商品录入')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('product', 'product_add')}"></nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+            <div class="pt-3 pb-2 mb-3"><h1 class="h4">商品录入</h1></div>
+
+            <div class="card card-erp" style="max-width: 800px;">
+                <div class="card-body">
+                    <form id="addProductForm">
+                        <div class="mb-3">
+                            <label class="form-label">商品名称</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">进货价</label>
+                                <input type="number" class="form-control" name="costPrice" step="0.01">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">零售价</label>
+                                <input type="number" class="form-control" name="salePrice" step="0.01">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">初始库存</label>
+                                <input type="number" class="form-control" name="stock" value="0">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">预警数量</label>
+                                <input type="number" class="form-control" name="warningNum" value="10">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">供应商</label>
+                            <input type="text" class="form-control" name="supplier">
+                        </div>
+                        <button type="button" onclick="saveProduct()" class="btn btn-primary">保存商品</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    function saveProduct() {
+        var formData = {};
+        $("#addProductForm").serializeArray().forEach(item => formData[item.name] = item.value);
+        $.ajax({
+            url: "/product/add", type: "POST", contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(res) {
+                if(res.success) { alert("保存成功"); location.href="/page/product/list"; }
+                else { alert("失败"); }
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('用户管理')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('system', 'user_list')}"></nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="pt-3 pb-2 mb-3 d-flex justify-content-between">
+                <h1 class="h4">系统用户列表</h1>
+                <a href="/page/system/user/add" class="btn btn-primary btn-sm">新增用户</a>
+            </div>
+
+            <div class="card card-erp">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr><th>ID</th><th>用户名</th><th>角色</th><th>创建时间</th><th>状态</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}">
+                            <td th:text="${u.id}"></td>
+                            <td th:text="${u.username}" class="fw-bold"></td>
+                            <td>
+                                <span th:if="${u.role == 1}" class="badge bg-primary">管理员</span>
+                                <span th:if="${u.role == 2}" class="badge bg-info">库管员</span>
+                                <span th:if="${u.role == 3}" class="badge bg-success">财务</span>
+                            </td>
+                            <td th:text="${#temporals.format(u.createTime, 'yyyy-MM-dd')}"></td>
+                            <td><span class="badge bg-light text-dark border">正常</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-link">重置密码</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{common :: commonScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: commonHead('资金流水')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="~{common :: sidebar('finance', 'finance_flow')}"></nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{common :: topbar}"></div>
+
+            <div class="pt-3 pb-2 mb-3 border-bottom"><h1 class="h4">资金收付流水</h1></div>
+
+            <div class="card card-erp">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="financeTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#income" type="button">销售收入</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#expense" type="button">采购支出</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="income">
+                            <table class="table table-hover">
+                                <thead><tr><th>流水号</th><th>类型</th><th>金额</th><th>时间</th><th>操作人</th></tr></thead>
+                                <tbody>
+                                <tr th:each="s : ${sales}">
+                                    <td th:text="'INC-' + ${s.id}"></td>
+                                    <td><span class="badge bg-success">销售收款</span></td>
+                                    <td th:text="'+' + ${s.totalAmount}" class="text-success fw-bold"></td>
+                                    <td th:text="${#temporals.format(s.saleTime, 'yyyy-MM-dd HH:mm')}"></td>
+                                    <td>管理员</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="expense">
+                            <table class="table table-hover">
+                                <thead><tr><th>流水号</th><th>类型</th><th>金额</th><th>时间</th><th>状态</th></tr></thead>
+                                <tbody>
+                                <tr th:each="i : ${inbounds}" th:if="${i.status == 1}">
+                                    <td th:text="'EXP-' + ${i.id}"></td>
+                                    <td><span class="badge bg-danger">采购付款</span></td>
+                                    <td th:text="'-' + ${i.quantity * i.purchasePrice}" class="text-danger fw-bold"></td>
+                                    <td th:text="${#temporals.format(i.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                                    <td>已结算</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{common :: commonScripts}"></div>
+</body>
+</html>
