@@ -1,5 +1,6 @@
 package com.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.inventory.entity.Product;
 import com.inventory.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,14 @@ public class ProductController {
     private IProductService productService;
 
     @GetMapping("/page/product/list")
-    public String listPage(Model model) {
-        List<Product> list = productService.list();
-        model.addAttribute("products", list);
+    public String listPage(Model model,@RequestParam(required = false) String keyword) {
+        QueryWrapper<Product> query = new QueryWrapper<>();
+        if (keyword != null&& !keyword.isEmpty()) {
+            query.like("name", keyword);
+        }
+        query.orderByAsc("id");
+        model.addAttribute("products", productService.list(query));
+        model.addAttribute("searchKeyword", keyword);
         return "product_list";
     }
 

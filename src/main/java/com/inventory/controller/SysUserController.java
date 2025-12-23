@@ -19,7 +19,6 @@ public class SysUserController {
     @Autowired
     private ISysUserService sysUserService;
 
-    // === 1. 登录接口 ===
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody SysUser loginUser, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
@@ -47,24 +46,20 @@ public class SysUserController {
         return result;
     }
 
-    // === 2. 注销接口 ===
     @GetMapping("/logout")
     public void logout(HttpSession session) {
         session.invalidate();
     }
 
-    // === 3. 用户列表 (支持模糊搜索) ===
     @GetMapping("/list")
     public Object list(@RequestParam(required = false) String name) {
         QueryWrapper<SysUser> query = new QueryWrapper<>();
-        // 如果传了 name 参数，就模糊匹配账号或姓名
         if (StringUtils.isNotBlank(name)) {
             query.like("username", name).or().like("real_name", name);
         }
         return sysUserService.list(query);
     }
 
-    // === 4. 新增用户 ===
     @PostMapping("/add")
     public Map<String, Object> add(@RequestBody SysUser user) {
         Map<String, Object> result = new HashMap<>();
@@ -82,13 +77,10 @@ public class SysUserController {
         return result;
     }
 
-    // === 5. 修改用户 (新功能) ===
-    // === 5. 修改用户 (修改版：只改姓名和角色，不再处理密码) ===
     @PostMapping("/update")
     public Map<String, Object> update(@RequestBody SysUser user) {
         Map<String, Object> result = new HashMap<>();
 
-        // 强制把密码设为 null，防止前端误传密码导致被意外修改
         user.setPassword(null);
 
         boolean success = sysUserService.updateById(user);
@@ -97,7 +89,6 @@ public class SysUserController {
         return result;
     }
 
-    // === 6. 删除用户 ===
     @PostMapping("/delete/{id}")
     public Map<String, Object> delete(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -111,7 +102,6 @@ public class SysUserController {
         return result;
     }
 
-    // === 7. 单独修改密码接口 (新增) ===
     @PostMapping("/changePassword")
     public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
         Map<String, Object> result = new HashMap<>();
@@ -138,21 +128,17 @@ public class SysUserController {
         // 3. 校验原密码是否正确
         if (!user.getPassword().equals(oldPassword)) {
             result.put("success", false);
-            result.put("msg", "❌ 原密码错误，无法修改！");
+            result.put("msg", "原密码错误，无法修改！");
             return result;
         }
 
-        // 4. 校验新密码是否和旧密码相同
         if (user.getPassword().equals(newPassword)) {
             result.put("success", false);
-            result.put("msg", "⚠️ 新密码不能与旧密码相同！");
+            result.put("msg", "新密码不能与旧密码相同！");
             return result;
         }
 
-        // 5. 更新密码
         user.setPassword(newPassword);
-        // 既然是改密码，通常不需要改 updateTime，或者看你需求
-        // user.setUpdateTime(LocalDateTime.now());
 
         boolean success = sysUserService.updateById(user);
         result.put("success", success);

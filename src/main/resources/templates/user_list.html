@@ -2,45 +2,232 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common :: commonHead('用户管理')}"></head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('system', 'user_list')}"></nav>
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div th:replace="~{common :: topbar}"></div>
 
-            <div class="pt-3 pb-2 mb-3 d-flex justify-content-between">
-                <h1 class="h4">系统用户列表</h1>
-                <a href="/page/system/user/add" class="btn btn-primary btn-sm">新增用户</a>
+<div>
+    <nav th:replace="~{common :: sidebar('system', 'user_list')}"></nav>
+
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">用户管理</h1>
+                <span class="text-muted small">系统账户的查询与维护</span>
+            </div>
+            <div>
+                <a href="/page/system/user/add" class="btn btn-primary">新增用户</a>
+            </div>
+        </div>
+
+        <div class="card card-erp">
+            <div class="card-header bg-white py-3">
+                <form method="get" action="/page/system/user/list" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <input type="text" class="form-control" name="name" placeholder="输入用户名或姓名搜索" th:value="${param.name}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary">搜索</button>
+                        <a href="/page/system/user/list" class="btn btn-link text-decoration-none text-muted">重置</a>
+                    </div>
+                </form>
             </div>
 
-            <div class="card card-erp">
-                <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                        <tr><th>ID</th><th>用户名</th><th>角色</th><th>创建时间</th><th>状态</th><th>操作</th></tr>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>角色权限</th>
+                            <th>创建时间</th>
+                            <th class="text-end pe-4">操作</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <tr th:each="u : ${users}">
-                            <td th:text="${u.id}"></td>
-                            <td th:text="${u.username}" class="fw-bold"></td>
-                            <td>
-                                <span th:if="${u.role == 1}" class="badge bg-primary">管理员</span>
-                                <span th:if="${u.role == 2}" class="badge bg-info">库管员</span>
-                                <span th:if="${u.role == 3}" class="badge bg-success">财务</span>
+                            <td class="ps-4 text-muted" th:text="${u.id}"></td>
+                            <td class="fw-bold" th:text="${u.username}"></td>
+                            <td th:text="${u.realName} ?: '-'"></td> <td>
+                            <span th:if="${u.role == 1}" class="badge bg-primary fw-normal">管理员</span>
+                            <span th:if="${u.role == 2}" class="badge bg-info text-dark fw-normal">库管员</span>
+                            <span th:if="${u.role == 3}" class="badge bg-success fw-normal">财务</span>
+                        </td>
+
+                            <td class="text-muted small" th:text="${#temporals.format(u.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary" th:onclick="openEditModal([[${u.id}]], [[${u.username}]], [[${u.realName}]], [[${u.role}]])">编辑</button>
+                                    <button class="btn btn-outline-secondary" th:onclick="openPassModal([[${u.id}]])">改密</button>
+                                    <button class="btn btn-outline-danger" th:onclick="deleteUser([[${u.id}]])">删除</button>
+                                </div>
                             </td>
-                            <td th:text="${#temporals.format(u.createTime, 'yyyy-MM-dd')}"></td>
-                            <td><span class="badge bg-light text-dark border">正常</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-link">重置密码</button>
-                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="6" class="text-center py-5 text-muted">暂无用户数据</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑用户信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control bg-light" name="username" id="edit_username" readonly>
+                        <div class="form-text">用户名不可修改</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">真实姓名</label>
+                        <input type="text" class="form-control" name="realName" id="edit_realName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">角色权限</label>
+                        <select class="form-select" name="role" id="edit_role">
+                            <option value="1">管理员</option>
+                            <option value="2">库管员</option>
+                            <option value="3">财务</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitEdit()">保存修改</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="modal fade" id="passModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">修改密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="passForm">
+                    <input type="hidden" name="id" id="pass_id">
+                    <div class="mb-3">
+                        <label class="form-label">原密码</label>
+                        <input type="password" class="form-control" name="oldPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密码</label>
+                        <input type="password" class="form-control" name="newPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitPass()">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{common :: commonScripts}"></div>
+
+<script>
+    // --- 1. 删除用户 ---
+    function deleteUser(id) {
+        if(id === 1) {
+            alert("超级管理员不能删除！");
+            return;
+        }
+        if(!confirm("确定要删除该用户吗？此操作不可恢复。")) return;
+
+        $.ajax({
+            url: "/sysUser/delete/" + id,
+            type: "POST",
+            success: function(res) {
+                if(res.success) {
+                    alert("删除成功");
+                    location.reload();
+                } else {
+                    alert("删除失败: " + res.msg);
+                }
+            }
+        });
+    }
+
+    // --- 2. 编辑用户 ---
+    function openEditModal(id, username, realName, role) {
+        $("#edit_id").val(id);
+        $("#edit_username").val(username);
+        $("#edit_realName").val(realName);
+        $("#edit_role").val(role);
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function submitEdit() {
+        var formData = {};
+        $("#editForm").serializeArray().forEach(item => formData[item.name] = item.value);
+
+        $.ajax({
+            url: "/sysUser/update",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(res) {
+                if(res.success) {
+                    alert("信息修改成功");
+                    location.reload();
+                } else {
+                    alert(res.msg);
+                }
+            }
+        });
+    }
+
+    // --- 3. 修改密码 ---
+    function openPassModal(id) {
+        $("#passForm")[0].reset();
+        $("#pass_id").val(id);
+        new bootstrap.Modal(document.getElementById('passModal')).show();
+    }
+
+    function submitPass() {
+        var formData = {};
+        $("#passForm").serializeArray().forEach(item => formData[item.name] = item.value);
+
+        if(!formData.oldPassword || !formData.newPassword) {
+            alert("请填写完整密码");
+            return;
+        }
+
+        $.ajax({
+            url: "/sysUser/changePassword",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(res) {
+                if(res.success) {
+                    alert("密码修改成功，请重新登录");
+                    location.href = "/login";
+                } else {
+                    alert(res.msg);
+                }
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

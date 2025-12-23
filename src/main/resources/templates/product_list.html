@@ -12,170 +12,127 @@
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
             <div>
                 <h1 class="h4 mb-1">商品列表</h1>
-                <span class="text-muted small">管理所有在售商品的档案信息</span>
+                <span class="text-muted small">查询与管理所有商品档案</span>
             </div>
+            <a href="/page/product/add" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> 录入商品
+            </a>
         </div>
 
         <div class="card card-erp">
+            <div class="card-header bg-white py-3">
+                <form action="/page/product/list" method="get" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0"
+                                   name="keyword"
+                                   placeholder="输入商品名称或条码..."
+                                   th:value="${searchKeyword}">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary">搜索</button>
+                        <a href="/page/product/list" class="btn btn-link text-decoration-none text-muted">重置</a>
+                    </div>
+                </form>
+            </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light text-muted">
                         <tr>
-                            <th class="ps-4" style="width: 60px;">ID</th>
+                            <th class="ps-4" style="width: 80px;">ID</th>
                             <th>商品名称</th>
-                            <th>供应商</th>
-                            <th>成本价</th>
-                            <th>零售价</th>
+                            <th>销售价格</th>
+                            <th>当前库存</th>
                             <th>库存状态</th>
+                            <th>供应商/备注</th>
                             <th class="text-end pe-4">操作</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="p : ${products}">
-                            <td class="ps-4 text-muted" th:text="${p.id}"></td>
+                            <td class="ps-4 text-muted font-monospace" th:text="${p.id}"></td>
+
                             <td>
                                 <div class="fw-bold text-dark" th:text="${p.name}"></div>
                             </td>
-                            <td class="small text-muted" th:text="${p.supplier} ?: '-'"></td>
-                            <td class="text-muted">¥ <span th:text="${p.costPrice}"></span></td>
-                            <td class="fw-bold text-primary">¥ <span th:text="${p.salePrice}"></span></td>
+
+                            <td class="fw-bold text-primary">
+                                ¥ <span th:text="${p.salePrice}"></span>
+                            </td>
 
                             <td>
-                                <div class="d-flex align-items-center">
-                                    <span th:text="${p.stock}" class="me-2 fw-bold"></span>
-                                    <span th:if="${p.stock < p.warningNum}" class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
-                                            <i class="bi bi-exclamation-circle-fill me-1"></i> 缺货
-                                        </span>
-                                    <span th:if="${p.stock >= p.warningNum}" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
-                                            <i class="bi bi-check-circle-fill me-1"></i> 充足
-                                        </span>
-                                </div>
+                                <span th:text="${p.stock}" class="fw-bold"></span>
+                            </td>
+
+                            <td>
+                                <span th:if="${p.stock <= 0}" class="badge bg-secondary">已售罄</span>
+                                <span th:if="${p.stock > 0 && p.stock < p.warningNum}" class="badge bg-danger">库存紧张</span>
+                                <span th:if="${p.stock >= p.warningNum}" class="badge bg-success-subtle text-success border border-success-subtle">充足</span>
+                            </td>
+
+                            <td class="text-muted small text-truncate" style="max-width: 150px;"
+                                th:text="${p.supplier} ?: '-'" th:title="${p.supplier}">
                             </td>
 
                             <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-light text-primary me-1"
-                                        title="编辑"
-                                        th:onclick="openEditModal([[${p.id}]], [[${p.name}]], [[${p.costPrice}]], [[${p.salePrice}]], [[${p.stock}]], [[${p.warningNum}]], [[${p.supplier}]])">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                        title="删除"
-                                        th:onclick="deleteProduct([[${p.id}]])">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary" th:onclick="editProduct([[${p.id}]])">编辑</button>
+                                    <button class="btn btn-outline-danger" th:onclick="deleteProduct([[${p.id}]])">删除</button>
+                                </div>
                             </td>
                         </tr>
 
                         <tr th:if="${#lists.isEmpty(products)}">
                             <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                暂无商品数据
+                                <div class="mb-3">
+                                    <i class="bi bi-box-seam fs-1 text-gray-300"></i>
+                                </div>
+                                <p>未找到相关商品</p>
+                                <a th:if="${searchKeyword != null}" href="/page/product/list" class="btn btn-sm btn-outline-secondary mt-2">清除搜索条件</a>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
         </div>
     </main>
-</div>
-
-<div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-white">
-                <h5 class="modal-title fw-bold">编辑商品</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm">
-                    <input type="hidden" name="id" id="edit_id">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">商品名称</label>
-                        <input type="text" class="form-control" name="name" id="edit_name" required>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label text-muted small">进货成本</label>
-                            <input type="number" class="form-control" name="costPrice" id="edit_costPrice" step="0.01">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted small">零售价格</label>
-                            <input type="number" class="form-control" name="salePrice" id="edit_salePrice" step="0.01">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted small">当前库存</label>
-                            <input type="number" class="form-control" name="stock" id="edit_stock">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted small">预警阈值</label>
-                            <input type="number" class="form-control" name="warningNum" id="edit_warningNum">
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <label class="form-label text-muted small">供应商</label>
-                        <input type="text" class="form-control" name="supplier" id="edit_supplier">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer bg-light border-top-0">
-                <button type="button" class="btn btn-link text-decoration-none text-muted" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary px-4" onclick="submitUpdate()">保存修改</button>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div th:replace="~{common :: commonScripts}"></div>
 
 <script>
-    // 1. 打开编辑弹窗
-    function openEditModal(id, name, cost, sale, stock, warning, supplier) {
-        $("#edit_id").val(id);
-        $("#edit_name").val(name);
-        $("#edit_costPrice").val(cost);
-        $("#edit_salePrice").val(sale);
-        $("#edit_stock").val(stock);
-        $("#edit_warningNum").val(warning);
-        $("#edit_supplier").val(supplier);
-        $("#editModal").modal("show");
+    // 编辑商品 (需要预留接口)
+    function editProduct(id) {
+        // 跳转到编辑页面，或者弹窗
+        // location.href = "/page/product/edit/" + id;
+        alert("编辑功能开发中... ID: " + id);
     }
 
-    // 2. 提交修改
-    function submitUpdate() {
-        var formData = {};
-        $("#editForm").serializeArray().forEach(item => formData[item.name] = item.value);
-
-        $.ajax({
-            url: "/product/update",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(formData),
-            success: function(res) {
-                if (res.success) {
-                    location.reload();
-                } else {
-                    alert("修改失败：" + res.msg);
-                }
-            }
-        });
-    }
-
-    // 3. 删除商品
+    // 删除商品
     function deleteProduct(id) {
-        if (!confirm("确定要下架（删除）该商品吗？此操作不可恢复！")) {
-            return;
-        }
+        if(!confirm("确定要删除该商品吗？此操作不可恢复。")) return;
+
         $.ajax({
-            url: "/product/delete/" + id,
+            url: "/product/delete/" + id, // 确保后端有这个 POST 接口
             type: "POST",
             success: function(res) {
-                if (res.success) {
-                    location.reload();
+                if(res.success) {
+                    alert("删除成功");
+                    location.reload(); // 刷新页面，重新加载列表
                 } else {
-                    alert("操作失败：" + res.msg);
+                    alert("删除失败: " + res.msg);
                 }
+            },
+            error: function() {
+                alert("请求出错");
             }
         });
     }

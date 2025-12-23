@@ -1,6 +1,7 @@
 package com.inventory.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.inventory.entity.Inbound;
 import com.inventory.entity.Product;
 import com.inventory.entity.Sale;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -68,7 +70,7 @@ public class PageController {
     @GetMapping("/page/inbound/list")
     public String inboundList(Model model) {
         List<Inbound> list = inboundService.list();
-        fillInboundProductName(list); // 填充商品名称
+        fillInboundProductName(list);
 
         model.addAttribute("inbounds", list);
         model.addAttribute("activeGroup", "inbound");
@@ -121,13 +123,18 @@ public class PageController {
 
     //系统管理
     @GetMapping("/page/system/user/list")
-    public String userList(Model model, HttpSession session) {
-        if (!checkPermission(session, 1)) return "redirect:/"; // 只有管理员能进
-
-        model.addAttribute("users", sysUserService.list());
-        model.addAttribute("activeGroup", "system");
-        model.addAttribute("activeUri", "user_list");
-        return "user_list";
+    public String userList(Model model,@RequestParam(required = false) String name) {
+            QueryWrapper<SysUser> query = new QueryWrapper<>();
+            if(StringUtils.isNotBlank(name)){
+                query.and(wrapper -> wrapper.like("username", name)
+                        .or()
+                        .like("real_name", name));
+            }
+            query.orderByDesc("create_time");
+            List<SysUser> userList = sysUserService.list(query);
+            model.addAttribute("users", userList);
+            model.addAttribute("searchName", name);
+            return "user_list";
     }
 
     @GetMapping("/page/system/user/add")
