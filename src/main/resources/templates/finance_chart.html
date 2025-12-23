@@ -2,38 +2,159 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common :: commonHead('财务报表')}"></head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('finance', 'finance_chart')}"></nav>
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div th:replace="~{common :: topbar}"></div>
-            <div class="pt-3 pb-2 mb-3 border-bottom"><h1 class="h4">财务分析报表</h1></div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card card-erp mb-4">
-                        <div class="card-header">近一周收支对比</div>
-                        <div class="card-body">
-                            <div id="chart1" style="height: 300px; display: flex; align-items: center; justify-content: center;" class="text-muted">
-                                (此处可扩展柱状图)
-                            </div>
-                        </div>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+<div>
+    <nav th:replace="~{common :: sidebar('finance', 'finance_chart')}"></nav>
+
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">财务分析报表</h1>
+                <span class="text-muted small">基于系统真实数据的实时分析</span>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-7">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 fw-bold text-primary">近6个月收支趋势</h6>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card card-erp mb-4">
-                        <div class="card-header">利润占比分析</div>
-                        <div class="card-body">
-                            <div id="chart2" style="height: 300px; display: flex; align-items: center; justify-content: center;" class="text-muted">
-                                (此处可扩展饼图)
-                            </div>
-                        </div>
+                    <div class="card-body">
+                        <div id="trendChart" style="height: 320px; width: 100%;"></div>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
+
+            <div class="col-lg-5">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 fw-bold text-primary">总收支构成</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="pieChart" style="height: 320px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-erp">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary">月度财务汇总表</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-center">
+                        <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4 text-start">月份</th>
+                            <th>销售总额 (收入)</th>
+                            <th>采购总额 (支出)</th>
+                            <th>毛利润</th>
+                            <th>状态</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${tableData}">
+                            <td class="ps-4 text-start fw-bold" th:text="${row.month}"></td>
+                            <td class="text-success fw-bold">
+                                +¥ <span th:text="${row.totalIncome}"></span>
+                            </td>
+                            <td class="text-danger fw-bold">
+                                -¥ <span th:text="${row.totalExpense}"></span>
+                            </td>
+                            <td th:class="${row.profit >= 0 ? 'text-primary fw-bold' : 'text-danger fw-bold'}">
+                                ¥ <span th:text="${row.profit}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${row.profit >= 0}" class="badge bg-success">盈利</span>
+                                <span th:if="${row.profit < 0}" class="badge bg-danger">亏损</span>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(tableData)}">
+                            <td colspan="5" class="text-center py-5 text-muted">暂无财务数据</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
 </div>
+
 <div th:replace="~{common :: commonScripts}"></div>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var months = [[${chartData.months}]] || [];
+        var incomes = [[${chartData.incomes}]] || [];
+        var expenses = [[${chartData.expenses}]] || [];
+
+        var totalIncome = [[${chartData.totalIncome}]] || 0;
+        var totalExpense = [[${chartData.totalExpense}]] || 0;
+
+        var trendChart = echarts.init(document.getElementById('trendChart'));
+        var trendOption = {
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['收入', '支出'] },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: months
+            },
+            yAxis: { type: 'value' },
+            series: [
+                {
+                    name: '收入',
+                    type: 'bar',
+                    data: incomes,
+                    itemStyle: { color: '#198754' }
+                },
+                {
+                    name: '支出',
+                    type: 'bar',
+                    data: expenses,
+                    itemStyle: { color: '#dc3545' }
+                }
+            ]
+        };
+        trendChart.setOption(trendOption);
+
+        // --- 渲染饼图 ---
+        var pieChart = echarts.init(document.getElementById('pieChart'));
+        var pieOption = {
+            tooltip: { trigger: 'item' },
+            legend: { bottom: '0%' },
+            series: [
+                {
+                    name: '收支构成',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                    data: [
+                        // 使用计算出的总数
+                        { value: totalIncome, name: '总收入', itemStyle: { color: '#198754' } },
+                        { value: totalExpense, name: '总支出', itemStyle: { color: '#dc3545' } }
+                    ]
+                }
+            ]
+        };
+        pieChart.setOption(pieOption);
+
+        window.addEventListener('resize', function() {
+            trendChart.resize();
+            pieChart.resize();
+        });
+    });
+</script>
+
 </body>
 </html>

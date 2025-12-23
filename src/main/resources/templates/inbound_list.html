@@ -1,44 +1,79 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{common :: commonHead('采购订单管理')}"></head>
+<head th:replace="~{common :: commonHead('采购订单记录')}"></head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <nav th:replace="~{common :: sidebar('inbound', 'inbound_list')}"></nav>
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div th:replace="~{common :: topbar}"></div>
 
-            <div class="pt-3 pb-2 mb-3 d-flex justify-content-between align-items-center">
-                <h1 class="h4">采购订单管理</h1>
-                <a href="/page/inbound/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增采购</a>
+<div>
+    <nav th:replace="~{common :: sidebar('inbound', 'inbound_list')}"></nav>
+
+    <main>
+        <div th:replace="~{common :: topbar}"></div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">采购订单记录</h1>
+                <span class="text-muted small">查看所有历史采购单据及入库状态</span>
             </div>
+        </div>
 
-            <div class="card card-erp">
-                <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                        <tr><th>单号</th><th>商品名称</th><th>数量</th><th>进价</th><th>总额</th><th>状态</th><th>时间</th></tr>
+        <div class="card card-erp">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4" style="width: 120px;">单据编号</th>
+                            <th>采购商品</th>
+                            <th>数量</th>
+                            <th>进货单价</th>
+                            <th>订单总额</th>
+                            <th>当前状态</th>
+                            <th class="text-end pe-4">创建时间</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <tr th:each="i : ${inbounds}">
-                            <td th:text="'PO-' + ${i.id}"></td>
-                            <td th:text="${i.productName}" class="fw-bold"></td>
-                            <td th:text="${i.quantity}"></td>
-                            <td th:text="${i.purchasePrice}"></td>
-                            <td th:text="${i.quantity * i.purchasePrice}"></td>
-                            <td>
-                                <span th:if="${i.status == 0}" class="badge bg-warning text-dark">待入库</span>
-                                <span th:if="${i.status == 1}" class="badge bg-success">已入库</span>
+                            <td class="ps-4">
+                                <span class="font-monospace text-primary fw-bold" th:text="|PO-${i.id}|"></span>
                             </td>
-                            <td th:text="${#temporals.format(i.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${i.productName}"></div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${i.quantity}"></span>
+                            </td>
+                            <td class="text-muted">¥ <span th:text="${i.purchasePrice}"></span></td>
+                            <td class="fw-bold text-dark">¥ <span th:text="${i.quantity * i.purchasePrice}"></span></td>
+
+                            <td>
+                                    <span th:if="${i.status == 0}" class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">
+                                        <i class="bi bi-clock me-1"></i> 待入库
+                                    </span>
+                                <span th:if="${i.status == 1}" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                        <i class="bi bi-check-all me-1"></i> 已入库
+                                    </span>
+                            </td>
+
+                            <td class="text-end pe-4 text-muted small"
+                                th:text="${#temporals.format(i.createTime, 'yyyy-MM-dd HH:mm')}">
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(inbounds)}">
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-clipboard-x fs-1 d-block mb-3"></i>
+                                暂无采购记录
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 </div>
-<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<div th:replace="~{common :: commonScripts}"></div>
+
 </body>
 </html>

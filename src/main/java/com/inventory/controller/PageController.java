@@ -119,27 +119,6 @@ public class PageController {
         return "stock_warning";
     }
 
-    //财务模块
-    @GetMapping("/page/finance/flow")
-    public String financeFlow(Model model, HttpSession session) {
-        if (!checkPermission(session, 1, 3)) return "redirect:/";
-
-        model.addAttribute("sales", saleService.list());
-        model.addAttribute("inbounds", inboundService.list());
-        model.addAttribute("activeGroup", "finance");
-        model.addAttribute("activeUri", "finance_flow");
-        return "finance_flow";
-    }
-
-    @GetMapping("/page/finance/chart")
-    public String financeChart(Model model, HttpSession session) {
-        if (!checkPermission(session, 1, 3)) return "redirect:/";
-
-        model.addAttribute("activeGroup", "finance");
-        model.addAttribute("activeUri", "finance_chart");
-        return "finance_chart";
-    }
-
     //系统管理
     @GetMapping("/page/system/user/list")
     public String userList(Model model, HttpSession session) {

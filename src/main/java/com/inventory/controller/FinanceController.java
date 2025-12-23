@@ -5,90 +5,101 @@ import com.inventory.entity.Sale;
 import com.inventory.service.IInboundService;
 import com.inventory.service.ISaleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-@RestController
+/**
+ * 财务管理控制器
+ * 注：这里改用了 @Controller，因为我们要返回 Thymeleaf 页面，而不是 JSON 数据
+ */
+@Controller
 public class FinanceController {
 
     @Autowired
     private ISaleService saleService;
+
     @Autowired
     private IInboundService inboundService;
 
-    @GetMapping("/finance/data")
-    public Map<String, Object> getFinanceData() {
-        Map<String, Object> result = new HashMap<>();
-
-        // 获取所有数据（实际项目中应只查最近的数据以优化性能）
+    @GetMapping("/page/finance/flow")
+    public String flowPage(Model model) {
         List<Sale> sales = saleService.list();
+
         List<Inbound> inbounds = inboundService.list();
 
-        // --- 1. 计算总累计数据 (加入判空逻辑，防止 NPE 报错) ---
+        model.addAttribute("sales", sales);
+        model.addAttribute("inbounds", inbounds);
 
-        // 总收入 (Total Revenue)
-        BigDecimal totalRevenue = sales.stream()
-                .map(Sale::getTotalAmount)
-                .filter(amount -> amount != null) // 过滤掉空值
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return "finance_flow";
+    }
 
-        // 总利润 (Total Profit)
-        BigDecimal totalProfit = sales.stream()
-                .map(Sale::getProfit)
-                .filter(profit -> profit != null) // 过滤掉空值
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    @GetMapping("/page/finance/chart")
+    public String chartPage(Model model) {
+        List<Sale> allSales = saleService.list();
+        List<Inbound> allInbounds = inboundService.list();
 
-        // 总成本 (Total Cost) - 只统计已入库(status=1)的
-        BigDecimal totalCost = inbounds.stream()
-                .filter(i -> i.getStatus() != null && i.getStatus() == 1)
-                .map(Inbound::getTotalAmount)
-                .filter(amount -> amount != null) // 过滤掉空值
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<String> months = new ArrayList<>();
+        List<BigDecimal> incomes = new ArrayList<>();
+        List<BigDecimal> expenses = new ArrayList<>();
 
-        result.put("totalRevenue", totalRevenue);
-        result.put("totalProfit", totalProfit);
-        result.put("totalCost", totalCost);
+        List<Map<String, Object>> tableData = new ArrayList<>();
 
-        // --- 2. 图表数据 (最近7天) ---
-        List<String> dates = new ArrayList<>();
-        List<BigDecimal> incomeList = new ArrayList<>();
-        List<BigDecimal> expenseList = new ArrayList<>();
+        YearMonth current = YearMonth.now();
 
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = LocalDate.now().minusDays(i);
-            String dateStr = date.toString();
-            dates.add(dateStr); // 横轴日期
+        for (int i = 5; i >= 0; i--) {
+            YearMonth targetMonth = current.minusMonths(i);
+            String monthStr = targetMonth.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            months.add(monthStr);
 
-            // 当日收入
-            BigDecimal dayIncome = sales.stream()
-                    .filter(s -> s.getSaleTime() != null && s.getSaleTime().toString().startsWith(dateStr))
+            BigDecimal monthIncome = allSales.stream()
+                    .filter(s -> s.getSaleTime() != null && YearMonth.from(s.getSaleTime()).equals(targetMonth))
                     .map(Sale::getTotalAmount)
                     .filter(amount -> amount != null)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            incomeList.add(dayIncome);
+            incomes.add(monthIncome);
 
-            // 当日支出
-            BigDecimal dayExpense = inbounds.stream()
-                    .filter(in -> in.getStatus() != null && in.getStatus() == 1)
-                    .filter(in -> in.getUpdateTime() != null && in.getUpdateTime().toString().startsWith(dateStr))
-                    .map(Inbound::getTotalAmount)
-                    .filter(amount -> amount != null)
+            BigDecimal monthExpense = allInbounds.stream()
+                    .filter(in -> in.getStatus() != null && in.getStatus() == 1) // 必须是已入库
+                    .filter(in -> in.getCreateTime() != null && YearMonth.from(in.getCreateTime()).equals(targetMonth))
+                    .map(in -> {
+                        BigDecimal price = in.getPurchasePrice() != null ? in.getPurchasePrice() : BigDecimal.ZERO;
+                        BigDecimal qty = new BigDecimal(in.getQuantity() != null ? in.getQuantity() : 0);
+                        return price.multiply(qty);
+                    })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            expenseList.add(dayExpense);
+            expenses.add(monthExpense);
+
+            Map<String, Object> row = new HashMap<>();
+            row.put("month", monthStr);
+            row.put("totalIncome", monthIncome);
+            row.put("totalExpense", monthExpense);
+            row.put("profit", monthIncome.subtract(monthExpense));
+            tableData.add(0, row);
         }
 
-        result.put("dates", dates);
-        result.put("incomes", incomeList);
-        result.put("expenses", expenseList);
+        BigDecimal totalIncome = incomes.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalExpense = expenses.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return result;
+        Map<String, Object> chartData = new HashMap<>();
+        chartData.put("months", months);
+        chartData.put("incomes", incomes);
+        chartData.put("expenses", expenses);
+        chartData.put("totalIncome", totalIncome);
+        chartData.put("totalExpense", totalExpense);
+
+        model.addAttribute("chartData", chartData);
+        model.addAttribute("tableData", tableData);
+
+        return "finance_chart";
     }
 }

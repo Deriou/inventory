@@ -2,54 +2,83 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common :: commonHead('销售记录')}"></head>
 <body>
-<div class="container-fluid">
-  <div class="row">
-    <nav th:replace="~{common :: sidebar('sale', 'sale_list')}"></nav>
 
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div th:replace="~{common :: topbar}"></div>
+<div>
+  <nav th:replace="~{common :: sidebar('sale', 'sale_list')}"></nav>
 
-      <div class="pt-3 pb-2 mb-3 d-flex justify-content-between align-items-center">
-        <h1 class="h4">销售流水记录</h1>
-        <a href="/page/sale/create" class="btn btn-success btn-sm">
-          <i class="bi bi-cart-plus"></i> 去收银台
-        </a>
+  <main>
+    <div th:replace="~{common :: topbar}"></div>
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+      <div>
+        <h1 class="h4 mb-1">销售流水记录</h1>
+        <span class="text-muted small">查看所有销售订单明细及利润情况</span>
       </div>
+      <a href="/page/sale/create" class="btn btn-primary shadow-sm">
+        <i class="bi bi-cart-plus me-1"></i> 前往收银台
+      </a>
+    </div>
 
-      <div class="card card-erp">
-        <div class="card-body">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
+    <div class="card card-erp">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted">
             <tr>
-              <th>流水号</th>
+              <th class="ps-4" style="width: 120px;">流水号</th>
               <th>商品名称</th>
               <th>销售数量</th>
-              <th>单价</th>
-              <th>总金额</th>
+              <th>销售单价</th>
+              <th>订单总额</th>
               <th>毛利润</th>
-              <th>销售时间</th>
+              <th class="text-end pe-4">销售时间</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="s : ${sales}">
-              <td th:text="'NO.' + ${s.id}"></td>
-              <td th:text="${s.productName}" class="fw-bold"></td>
-              <td th:text="${s.quantity}"></td>
-              <td th:text="${s.salePrice}"></td>
-              <td th:text="${s.totalAmount}" class="text-success fw-bold"></td>
-              <td th:text="${s.profit}" class="text-secondary small"></td>
-              <td th:text="${#temporals.format(s.saleTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+              <td class="ps-4">
+                <span class="font-monospace text-muted small" th:text="|NO.${s.id}|"></span>
+              </td>
+              <td>
+                <div class="fw-bold text-dark" th:text="${s.productName}"></div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border" th:text="${s.quantity}"></span>
+              </td>
+              <td class="text-muted">¥ <span th:text="${s.salePrice}"></span></td>
+
+              <td class="fw-bold text-primary">
+                ¥ <span th:text="${s.totalAmount}"></span>
+              </td>
+
+              <td>
+                                    <span class="text-success fw-bold small">
+                                        <i class="bi bi-graph-up-arrow me-1"></i>¥ <span th:text="${s.profit}"></span>
+                                    </span>
+              </td>
+
+              <td class="text-end pe-4 text-muted small"
+                  th:text="${#temporals.format(s.saleTime, 'yyyy-MM-dd HH:mm:ss')}">
+              </td>
             </tr>
+
             <tr th:if="${#lists.isEmpty(sales)}">
-              <td colspan="7" class="text-center text-muted py-4">暂无销售数据</td>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <div class="mb-3">
+                  <i class="bi bi-receipt-cutoff fs-1 text-gray-300"></i>
+                </div>
+                <p>暂无销售数据，快去收银台开一单吧！</p>
+              </td>
             </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </div>
+
 <div th:replace="~{common :: commonScripts}"></div>
+
 </body>
 </html>
