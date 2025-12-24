@@ -3,18 +3,21 @@
 <head th:replace="~{common :: commonHead('ERP系统 - 仪表盘')}"></head>
 <body>
 
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
 <div>
     <nav th:replace="~{common :: sidebar('index', 'index')}"></nav>
 
     <main>
         <div th:replace="~{common :: topbar}"></div>
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-2">
-            <h1 class="h4">经营概况</h1>
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <button type="button" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-calendar"></i> 本周数据
-                </button>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">经营概况</h1>
+                <span class="text-muted small">企业实时运营数据看板</span>
+            </div>
+            <div class="text-muted small">
+                <i class="bi bi-clock me-1"></i>更新于: <span th:text="${#dates.format(new java.util.Date(), 'HH:mm')}"></span>
             </div>
         </div>
 
@@ -24,8 +27,12 @@
                     <div class="card-body">
                         <div class="text-uppercase text-primary fw-bold small mb-1">今日销售额</div>
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="h3 mb-0 fw-bold">¥ 2,580</div>
-                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-currency-yen"></i></div>
+                            <div class="h3 mb-0 fw-bold text-dark">
+                                ¥<span th:text="${stats.todaySales}">0.00</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            实时统计中
                         </div>
                     </div>
                 </div>
@@ -36,8 +43,12 @@
                     <div class="card-body">
                         <div class="text-uppercase text-success fw-bold small mb-1">待入库订单</div>
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="h3 mb-0 fw-bold">12 单</div>
-                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-receipt"></i></div>
+                            <div class="h3 mb-0 fw-bold text-dark">
+                                <span th:text="${stats.pendingInbound}">0</span> 单
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <a href="/page/inbound/receive" class="text-decoration-none small text-success">立即处理 &rarr;</a>
                         </div>
                     </div>
                 </div>
@@ -48,9 +59,11 @@
                     <div class="card-body">
                         <div class="text-uppercase text-info fw-bold small mb-1">在售商品数</div>
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="h3 mb-0 fw-bold">856 件</div>
-                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-box-seam"></i></div>
+                            <div class="h3 mb-0 fw-bold text-dark">
+                                <span th:text="${stats.productCount}">0</span> 件
+                            </div>
                         </div>
+                        <div class="mt-2 text-muted small">实时统计中</div>
                     </div>
                 </div>
             </div>
@@ -60,8 +73,13 @@
                     <div class="card-body">
                         <div class="text-uppercase text-danger fw-bold small mb-1">库存告急</div>
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="h3 mb-0 fw-bold text-danger">5 种</div>
-                            <div class="fs-1 text-gray-300 opacity-25"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                            <div class="h3 mb-0 fw-bold" th:classappend="${stats.warningCount > 0} ? 'text-danger' : 'text-dark'">
+                                <span th:text="${stats.warningCount}">0</span> 种
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <a href="/page/stock/warning" class="text-decoration-none small text-danger" th:if="${stats.warningCount > 0}">查看详情 &rarr;</a>
+                            <span class="text-success small" th:if="${stats.warningCount == 0}">库存健康</span>
                         </div>
                     </div>
                 </div>
@@ -69,76 +87,106 @@
         </div>
 
         <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-lg-8">
                 <div class="card card-erp h-100">
                     <div class="card-header bg-white py-3">
-                        <h6 class="m-0 fw-bold text-primary">快捷入口</h6>
+                        <h6 class="m-0 fw-bold text-dark">近7天销售趋势</h6>
                     </div>
                     <div class="card-body">
-                        <div class="d-grid gap-3">
-                            <a href="/page/sale/create" class="btn btn-outline-primary py-2 text-start">
-                                <i class="bi bi-cart4 me-2"></i> 前台收银 (开单)
+                        <div id="salesChart" style="height: 320px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 fw-bold text-dark">快捷操作</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="/page/sale/create" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center border-bottom">
+                                <span class="fw-medium">前台收银 (开单)</span>
+                                <span class="text-muted small">&rarr;</span>
                             </a>
-                            <a href="/page/product/add" class="btn btn-outline-success py-2 text-start">
-                                <i class="bi bi-plus-circle me-2"></i> 录入新商品
+                            <a href="/page/product/add" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center border-bottom">
+                                <span class="fw-medium">录入新商品</span>
+                                <span class="text-muted small">&rarr;</span>
                             </a>
-                            <a href="/page/inbound/create" class="btn btn-outline-warning py-2 text-start">
-                                <i class="bi bi-truck me-2"></i> 采购进货
+                            <a href="/page/inbound/create" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center border-bottom">
+                                <span class="fw-medium">采购进货</span>
+                                <span class="text-muted small">&rarr;</span>
                             </a>
-                            <a href="/page/stock/warning" class="btn btn-outline-danger py-2 text-start">
-                                <i class="bi bi-bell me-2"></i> 查看缺货商品
+                            <a href="/page/stock/warning" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                                <span class="fw-medium">缺货补货</span>
+                                <span class="badge bg-danger rounded-pill" th:if="${stats.warningCount > 0}" th:text="${stats.warningCount}"></span>
+                                <span class="text-muted small" th:if="${stats.warningCount == 0}">&rarr;</span>
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-8">
-                <div class="card card-erp h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 fw-bold text-primary">最近操作记录</h6>
-                        <a href="#" class="small text-decoration-none">查看全部</a>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4">操作类型</th>
-                                <th>内容</th>
-                                <th>操作人</th>
-                                <th>时间</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td class="ps-4"><span class="badge bg-success">销售</span></td>
-                                <td>销售出库：iPhone 15 Pro x 1</td>
-                                <td>管理员</td>
-                                <td class="text-muted small">10分钟前</td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4"><span class="badge bg-primary">入库</span></td>
-                                <td>采购入库：可口可乐 x 50箱</td>
-                                <td>张三</td>
-                                <td class="text-muted small">1小时前</td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4"><span class="badge bg-warning text-dark">修改</span></td>
-                                <td>更新商品价格：MacBook Air</td>
-                                <td>管理员</td>
-                                <td class="text-muted small">昨天</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
-
     </main>
 </div>
 
 <div th:replace="~{common :: commonScripts}"></div>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var dates = [[${chartDates}]];
+        var values = [[${chartValues}]];
+
+        var chartDom = document.getElementById('salesChart');
+        var myChart = echarts.init(chartDom);
+
+        var option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderColor: '#eee',
+                borderWidth: 1,
+                textStyle: { color: '#333' }
+            },
+            grid: {
+                left: '3%', right: '4%', bottom: '3%', top: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: dates,
+                axisLine: { lineStyle: { color: '#ddd' } },
+                axisLabel: { color: '#666' }
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: { lineStyle: { type: 'dashed', color: '#eee' } },
+                axisLabel: { color: '#666' }
+            },
+            series: [
+                {
+                    name: '销售额',
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    data: values,
+                    itemStyle: { color: '#0d6efd' },
+                    lineStyle: { width: 3 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(13, 110, 253, 0.2)' },
+                            { offset: 1, color: 'rgba(13, 110, 253, 0.01)' }
+                        ])
+                    }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.addEventListener('resize', function() { myChart.resize(); });
+    });
+</script>
 
 </body>
 </html>

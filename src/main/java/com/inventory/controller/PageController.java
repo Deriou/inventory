@@ -1,5 +1,6 @@
 package com.inventory.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.Query;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.inventory.entity.Inbound;
@@ -10,6 +11,7 @@ import com.inventory.service.IInboundService;
 import com.inventory.service.IProductService;
 import com.inventory.service.ISaleService;
 import com.inventory.service.ISysUserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,8 +19,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Controller
@@ -38,13 +45,60 @@ public class PageController {
         return "login";
     }
 
-    @GetMapping("/")
-    public String index(Model model,HttpSession session) {
-        if (session.getAttribute("currentUser") == null)
-            return "redirect:/login";
-        model.addAttribute("activeUri", "index");
+    @GetMapping({"/", "/index"})
+    public String index(Model model) {
+
+        String today = LocalDate.now().toString();
+        List<Sale> allSales = saleService.list();
+
+        BigDecimal todaySales = allSales.stream()
+                .filter(s -> s.getSaleTime().toString().startsWith(today))
+                .map(Sale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long pendingInbound = inboundService.count(new QueryWrapper<Inbound>().eq("status", 0));
+
+        long productCount = productService.count();
+
+        List<Product> products = productService.list();
+        long warningCount = products.stream().filter(p -> p.getStock() < p.getWarningNum()).count();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("todaySales", todaySales);
+        stats.put("pendingInbound", pendingInbound);
+        stats.put("productCount", productCount);
+        stats.put("warningCount", warningCount);
+        model.addAttribute("stats", stats);
+
+        List<String> dates = new ArrayList<>();
+        List<BigDecimal> salesData = new ArrayList<>();
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = LocalDate.now().minusDays(i);
+            String dateStr = date.toString();
+
+            BigDecimal daySum = allSales.stream()
+                    .filter(s -> s.getSaleTime().toString().startsWith(dateStr))
+                    .map(Sale::getTotalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            dates.add(date.format(DateTimeFormatter.ofPattern("MM-dd")));
+            salesData.add(daySum);
+        }
+
+        model.addAttribute("chartDates", dates);
+        model.addAttribute("chartValues", salesData);
+
         return "index";
     }
+
+    //退出登录
+    @GetMapping("/sysUser/logout")
+    public String logout(HttpSession session){
+        session.invalidate();
+        return "redirect:/login";
+    }
+
 
     //采购模块
     @GetMapping("/page/inbound/create")
@@ -115,9 +169,11 @@ public class PageController {
 
     @GetMapping("/page/stock/warning")
     public String stockWarning(Model model) {
-        model.addAttribute("products", productService.list());
-        model.addAttribute("activeGroup", "stock");
-        model.addAttribute("activeUri", "stock_warning");
+        QueryWrapper<Product> query = new QueryWrapper<>();
+        query.apply("stock<warning_num");
+        query.orderByAsc("stock");
+        List<Product> warningProducts = productService.list(query);
+        model.addAttribute("products", warningProducts);
         return "stock_warning";
     }
 

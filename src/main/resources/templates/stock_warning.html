@@ -11,25 +11,24 @@
 
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
             <div>
-                <h1 class="h4 mb-1 text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>库存预警
-                </h1>
-                <span class="text-muted small">以下商品库存已低于安全线，建议立即补货</span>
+                <h1 class="h4 mb-1">库存预警</h1>
+                <span class="text-muted small">监控库存不足的商品，及时补充货源</span>
             </div>
-            <a href="/page/inbound/create" class="btn btn-danger shadow-sm">
-                <i class="bi bi-cart-plus me-1"></i> 批量采购
-            </a>
+
         </div>
 
-        <div class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm" role="alert"
+        <div class="alert alert-danger mb-4 d-flex align-items-center shadow-sm" role="alert"
              th:if="${not #lists.isEmpty(products)}">
-            <i class="bi bi-bell-fill me-2 fs-5"></i>
             <div>
-                检测到 <strong>部分商品</strong> 库存紧张，请根据缺口数量安排采购计划。
+                当前共有 <strong th:text="${#lists.size(products)}">0</strong> 种商品库存低于安全线，请尽快安排补货。
             </div>
         </div>
 
-        <div class="card card-erp border-0 shadow-sm">
+        <div class="card card-erp">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-dark">缺货商品清单</h6>
+            </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -37,49 +36,50 @@
                         <tr>
                             <th class="ps-4">商品名称</th>
                             <th>当前库存</th>
-                            <th>预警阈值</th>
-                            <th>需补货缺口</th>
+                            <th>安全阈值</th>
+                            <th>建议补货量</th>
                             <th>供应商</th>
                             <th class="text-end pe-4">操作</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="p : ${products}" th:if="${p.stock < p.warningNum}">
+                        <tr th:each="p : ${products}">
                             <td class="ps-4">
                                 <div class="fw-bold text-dark" th:text="${p.name}"></div>
                             </td>
 
                             <td>
-                                <span class="badge bg-danger text-white rounded-pill px-3" th:text="${p.stock}"></span>
+                                    <span class="badge rounded-pill px-3"
+                                          th:classappend="${p.stock == 0} ? 'bg-secondary' : 'bg-danger'"
+                                          th:text="${p.stock}"></span>
                             </td>
 
-                            <td class="text-muted" th:text="${p.warningNum}"></td>
+                            <td class="text-muted">
+                                <span th:text="${p.warningNum}"></span>
+                            </td>
 
                             <td>
-                                    <span class="text-danger fw-bold fs-5"
-                                          th:text="'-' + (${p.warningNum} - ${p.stock})">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                         <span th:text="${p.warningNum - p.stock}"></span>
                                     </span>
                             </td>
 
-                            <td class="text-muted small" th:text="${p.supplier} ?: '未填写'"></td>
+                            <td class="text-muted small" th:text="${p.supplier} ?: '-'"></td>
 
                             <td class="text-end pe-4">
-                                <a href="/page/inbound/create" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-truck me-1"></i> 补货
+                                <a href="/page/inbound/create" class="btn btn-sm btn-link text-danger text-decoration-none">
+                                    去补货
                                 </a>
                             </td>
                         </tr>
-
                         </tbody>
                     </table>
 
                     <div th:if="${#lists.isEmpty(products)}" class="text-center py-5">
-                        <div class="mb-3">
-                            <i class="bi bi-shield-check fs-1 text-success"></i>
-                        </div>
                         <h5 class="text-success fw-bold">库存健康</h5>
-                        <p class="text-muted">当前所有商品库存均充足，无需补货。</p>
+                        <p class="text-muted small">所有商品库存均充足，暂无预警信息</p>
                     </div>
+
                 </div>
             </div>
         </div>

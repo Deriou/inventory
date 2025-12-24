@@ -64,18 +64,16 @@ public class ProductController {
 
     @PostMapping("/product/update")
     @ResponseBody
-    public Map<String, Object> updateProduct(@RequestBody Product product) {
+    public Map<String, Object> update(@RequestBody Product product) {
         Map<String, Object> result = new HashMap<>();
-        try {
-            product.setUpdateTime(LocalDateTime.now());
-            boolean success = productService.updateById(product);
-
-            result.put("success", success);
-            result.put("msg", success ? "修改成功" : "修改失败");
-        } catch (Exception e) {
+        if (product.getId() == null) {
             result.put("success", false);
-            result.put("msg", "修改异常");
+            result.put("msg","ID不能为空");
+            return result;
         }
+        boolean success = productService.updateById(product);
+        result.put("success", success);
+        result.put("msg", success ?"修改成功":"修改失败");
         return result;
     }
 

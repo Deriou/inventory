@@ -219,8 +219,8 @@
             data: JSON.stringify(formData),
             success: function(res) {
                 if(res.success) {
-                    alert("密码修改成功，请重新登录");
-                    location.href = "/login";
+                    alert("密码修改成功");
+                    location.reload();
                 } else {
                     alert(res.msg);
                 }

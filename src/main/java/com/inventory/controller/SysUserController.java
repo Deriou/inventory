@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.inventory.entity.SysUser;
 import com.inventory.service.ISysUserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,11 +45,6 @@ public class SysUserController {
         result.put("msg", "登录成功");
         result.put("role", dbUser.getRole());
         return result;
-    }
-
-    @GetMapping("/logout")
-    public void logout(HttpSession session) {
-        session.invalidate();
     }
 
     @GetMapping("/list")

@@ -6,98 +6,95 @@
 <div>
     <nav th:replace="~{common :: sidebar('sale', 'sale_create')}"></nav>
 
-    <main class="bg-light">
+    <main>
         <div th:replace="~{common :: topbar}"></div>
 
-        <div class="container-fluid p-0">
-            <div class="row g-4 m-0" style="height: calc(100vh - 100px);">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h1 class="h4 mb-1">前台收银</h1>
+                <span class="text-muted small">快速选择商品并结算</span>
+            </div>
+            <a href="/page/sale/list" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-list-ul me-1"></i> 查看流水
+            </a>
+        </div>
 
-                <div class="col-md-8 d-flex flex-column h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pt-2 px-1">
-                        <div>
-                            <h1 class="h4 mb-0 fw-bold text-gray-800"><i class="bi bi-shop me-2"></i>前台收银</h1>
-                            <span class="text-muted small">点击商品卡片加入清单</span>
-                        </div>
-                        <div class="input-group" style="width: 300px;">
-                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+        <div class="row g-4">
+            <div class="col-md-8">
+                <div class="card card-erp h-100">
+                    <div class="card-header bg-white py-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
                             <input type="text" id="searchBox" class="form-control border-start-0 ps-0"
-                                   placeholder="搜索商品名称/拼音..." onkeyup="filterProducts()">
+                                   placeholder="输入商品名称或拼音码检索..." onkeyup="filterProducts()">
                         </div>
                     </div>
 
-                    <div class="flex-grow-1 overflow-auto p-1">
+                    <div class="card-body bg-light p-3" style="height: 600px; overflow-y: auto;">
                         <div class="row row-cols-3 row-cols-lg-4 g-3" id="productList">
                             <div class="col product-item" th:each="p : ${products}" th:data-name="${p.name}">
-                                <div class="card h-100 border-0 shadow-sm product-card cursor-pointer position-relative"
-                                     th:onclick="addToCart([[${p.id}]], [[${p.name}]], [[${p.salePrice}]], [[${p.stock}]])"
-                                     style="transition: all 0.2s; cursor: pointer;">
+                                <div class="card h-100 shadow-sm border product-card cursor-pointer"
+                                     th:onclick="addToCart([[${p.id}]], [[${p.name}]], [[${p.salePrice}]], [[${p.stock}]])">
                                     <div class="card-body p-3 d-flex flex-column justify-content-between">
                                         <div>
-                                            <h6 class="fw-bold text-dark mb-1 text-truncate" th:title="${p.name}" th:text="${p.name}">商品名称</h6>
-                                            <span class="badge bg-light text-secondary border fw-normal mb-2">库存: <span th:text="${p.stock}"></span></span>
+                                            <div class="fw-bold text-dark text-truncate" th:title="${p.name}" th:text="${p.name}"></div>
+                                            <div class="text-muted small mt-1">库存: <span th:text="${p.stock}"></span></div>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-end mt-2">
-                                            <span class="h5 mb-0 text-primary fw-bold">¥<span th:text="${p.salePrice}"></span></span>
-                                            <i class="bi bi-plus-circle-fill text-primary fs-5 opacity-50 hover-icon"></i>
+                                        <div class="mt-2 text-primary fw-bold">
+                                            ¥<span th:text="${p.salePrice}"></span>
                                         </div>
                                     </div>
-                                    <div th:if="${p.stock <= 0}" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center rounded">
+                                    <div th:if="${p.stock <= 0}" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center">
                                         <span class="badge bg-secondary">已售罄</span>
                                     </div>
                                 </div>
                             </div>
-
                             <div id="noResultMsg" class="col-12 text-center py-5 text-muted d-none">
-                                <i class="bi bi-search fs-1"></i>
-                                <p class="mt-2">未找到相关商品</p>
+                                <p>未找到相关商品</p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-md-4 h-100">
-                    <div class="card card-erp h-100 border-0 shadow-lg d-flex flex-column">
-                        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                            <h5 class="m-0"><i class="bi bi-receipt me-2"></i>购物清单</h5>
-                            <button class="btn btn-sm btn-outline-light border-0" onclick="clearCart()" title="清空">
-                                <i class="bi bi-trash"></i> 清空
-                            </button>
+            <div class="col-md-4">
+                <div class="card card-erp h-100 d-flex flex-column">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold">购物清单</h6>
+                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0" onclick="clearCart()">清空</button>
+                    </div>
+
+                    <div class="card-body p-0 flex-grow-1" style="height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted sticky-top">
+                            <tr>
+                                <th class="ps-3">商品</th>
+                                <th style="width: 100px;" class="text-center">数量</th>
+                                <th class="text-end pe-3">小计</th>
+                                <th style="width: 30px;"></th>
+                            </tr>
+                            </thead>
+                            <tbody id="cartTableBody">
+                            </tbody>
+                        </table>
+
+                        <div id="emptyCartMsg" class="text-center text-muted py-5 mt-4">
+                            <i class="bi bi-cart3 fs-1 text-gray-300"></i>
+                            <p class="mt-2 small">请从左侧添加商品</p>
                         </div>
+                    </div>
 
-                        <div class="card-body p-0 flex-grow-1 overflow-auto bg-light">
-                            <table class="table table-hover align-middle mb-0 bg-white">
-                                <thead class="bg-light sticky-top text-muted small">
-                                <tr>
-                                    <th class="ps-3">商品</th>
-                                    <th style="width: 90px;">数量</th>
-                                    <th class="text-end pe-3">金额</th>
-                                    <th style="width: 40px;"></th>
-                                </tr>
-                                </thead>
-                                <tbody id="cartTableBody">
-                                </tbody>
-                            </table>
-
-                            <div id="emptyCartMsg" class="text-center text-muted py-5 mt-4">
-                                <div class="mb-3">
-                                    <i class="bi bi-cart4 display-1 text-gray-300"></i>
-                                </div>
-                                <p>请在左侧点击商品加入</p>
-                            </div>
+                    <div class="card-footer bg-white p-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">总数量</span>
+                            <span class="fw-bold" id="itemCount">0</span>
                         </div>
-
-                        <div class="card-footer bg-white p-4 border-top">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">商品数量</span>
-                                <span class="fw-bold" id="itemCount">0 件</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-end mb-4">
-                                <span class="h5 mb-0">应收总额</span>
-                                <span class="display-6 fw-bold text-danger" id="totalAmount">¥0.00</span>
-                            </div>
-                            <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" onclick="submitSale()">
-                                <i class="bi bi-check2-circle me-2"></i> 确认收款
-                            </button>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="h5 mb-0">应收总额</span>
+                            <span class="h4 mb-0 fw-bold text-primary" id="totalAmount">¥0.00</span>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary py-2" onclick="submitSale()">确认收款</button>
                         </div>
                     </div>
                 </div>
@@ -110,35 +107,32 @@
 
 <style>
     .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
+        border-color: #0d6efd !important; /* 鼠标悬停变蓝边框，简单直接 */
+        cursor: pointer;
     }
-    .hover-icon {
-        transition: opacity 0.2s;
+    /* 去掉数字输入框的默认样式 */
+    .qty-input {
+        text-align: center;
+        border: 1px solid #dee2e6;
     }
-    .product-card:hover .hover-icon {
-        opacity: 1 !important;
+    .qty-input:focus {
+        border-color: #86b7fe;
+        outline: 0;
     }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 
 <script>
-    // 购物车数据
     let cart = [];
 
     // 1. 添加商品
     function addToCart(id, name, price, stock) {
-        if (stock <= 0) {
-            // 简单的震动反馈或提示
-            alert("手慢了，该商品已售罄！");
-            return;
-        }
+        if (stock <= 0) { alert("该商品已售罄"); return; }
 
         let existingItem = cart.find(item => item.id === id);
         if (existingItem) {
-            if (existingItem.qty >= stock) {
-                alert("已达到库存上限 (" + stock + ")");
-                return;
-            }
+            if (existingItem.qty >= stock) { alert("库存不足"); return; }
             existingItem.qty++;
         } else {
             cart.push({ id: id, name: name, price: price, qty: 1, stock: stock });
@@ -146,7 +140,7 @@
         renderCart();
     }
 
-    // 2. 渲染购物车
+    // 2. 渲染购物车 (表格结构与 sale_list 保持一致)
     function renderCart() {
         let tbody = $("#cartTableBody");
         tbody.empty();
@@ -160,25 +154,25 @@
             cart.forEach((item, index) => {
                 let subtotal = item.price * item.qty;
                 total += subtotal;
-                count += item.qty;
+                count += parseInt(item.qty);
 
                 let row = `
                     <tr>
                         <td class="ps-3">
-                            <div class="fw-bold text-truncate" style="max-width: 120px;" title="${item.name}">${item.name}</div>
-                            <div class="small text-muted">¥${item.price}</div>
+                            <div class="text-dark fw-bold text-truncate" style="max-width: 100px;" title="${item.name}">${item.name}</div>
                         </td>
                         <td>
                             <div class="input-group input-group-sm">
-                                <button class="btn btn-outline-secondary px-1" onclick="updateQty(${index}, ${item.qty - 1})">-</button>
-                                <input type="text" class="form-control text-center px-0" value="${item.qty}" readonly>
-                                <button class="btn btn-outline-secondary px-1" onclick="updateQty(${index}, ${item.qty + 1})">+</button>
+                                <button class="btn btn-outline-secondary" onclick="changeQty(${index}, -1)">-</button>
+                                <input type="number" class="form-control qty-input px-0"
+                                       value="${item.qty}" onchange="manualInputQty(${index}, this.value)">
+                                <button class="btn btn-outline-secondary" onclick="changeQty(${index}, 1)">+</button>
                             </div>
                         </td>
-                        <td class="text-end pe-3 fw-bold text-dark">¥${subtotal.toFixed(2)}</td>
+                        <td class="text-end pe-3 fw-bold text-primary">¥${subtotal.toFixed(2)}</td>
                         <td>
-                            <button class="btn btn-link text-danger p-0" onclick="removeFromCart(${index})">
-                                <i class="bi bi-x-circle-fill"></i>
+                            <button class="btn btn-link text-muted p-0" onclick="removeFromCart(${index})">
+                                <i class="bi bi-x-lg small"></i>
                             </button>
                         </td>
                     </tr>
@@ -187,100 +181,70 @@
             });
         }
 
-        // 更新底部数据
         $("#totalAmount").text("¥" + total.toFixed(2));
-        $("#itemCount").text(count + " 件");
+        $("#itemCount").text(count);
     }
 
-    // 3. 更新数量 (支持加减按钮)
-    function updateQty(index, newQty) {
+    // 3. 数量逻辑
+    function changeQty(index, delta) {
+        validateAndSetQty(index, cart[index].qty + delta);
+    }
+    function manualInputQty(index, value) {
+        let newQty = parseInt(value);
+        if (isNaN(newQty)) newQty = 1;
+        validateAndSetQty(index, newQty);
+    }
+    function validateAndSetQty(index, newQty) {
+        let item = cart[index];
         if (newQty <= 0) {
-            removeFromCart(index);
-            return;
+            if(confirm("移除该商品？")) { removeFromCart(index); return; } else { newQty = 1; }
         }
-        if (newQty > cart[index].stock) {
-            alert("库存不足，当前只有 " + cart[index].stock + " 件");
-            return;
+        if (newQty > item.stock) {
+            alert("库存不足，最多 " + item.stock); newQty = item.stock;
         }
-        cart[index].qty = newQty;
+        item.qty = newQty;
         renderCart();
     }
-
-    // 4. 移除商品
     function removeFromCart(index) {
-        cart.splice(index, 1);
-        renderCart();
+        cart.splice(index, 1); renderCart();
     }
-
-    // 5. 清空
     function clearCart() {
         if(cart.length === 0) return;
-        if(!confirm("确定清空当前清单吗？")) return;
-        cart = [];
-        renderCart();
+        if(!confirm("确定清空清单？")) return;
+        cart = []; renderCart();
     }
 
-    // 6. 搜索过滤
+    // 4. 搜索逻辑
     function filterProducts() {
         let text = $("#searchBox").val().toLowerCase();
         let hasResult = false;
-
         $(".product-item").each(function() {
             let name = $(this).data("name").toString().toLowerCase();
-            if (name.includes(text)) {
-                $(this).removeClass("d-none");
-                hasResult = true;
-            } else {
-                $(this).addClass("d-none");
-            }
+            if (name.includes(text)) { $(this).removeClass("d-none"); hasResult = true; } else { $(this).addClass("d-none"); }
         });
-
-        // 显示/隐藏无结果提示
-        if(hasResult) {
-            $("#noResultMsg").addClass("d-none");
-        } else {
-            $("#noResultMsg").removeClass("d-none");
-        }
+        hasResult ? $("#noResultMsg").addClass("d-none") : $("#noResultMsg").removeClass("d-none");
     }
 
-    // 7. 提交结算
+    // 5. 提交
     function submitSale() {
-        if (cart.length === 0) {
-            alert("请先添加商品！");
-            return;
-        }
+        if (cart.length === 0) { alert("清单为空"); return; }
+        if (!confirm("确认收款 " + $("#totalAmount").text() + " ?")) return;
 
-        let totalStr = $("#totalAmount").text();
-        if (!confirm("共 " + $("#itemCount").text() + "，合计 " + totalStr + "\n确认收款吗？")) {
-            return;
-        }
-
-        // 模拟批量提交 (后端接口是一条条插的)
-        let successCount = 0;
-        // 使用 Promise.all 等待所有请求
+        // 简单的 Ajax 提交逻辑
         let requests = cart.map(item => {
             return $.ajax({
-                url: "/sale/add",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    productId: item.id,
-                    quantity: item.qty,
-                    salePrice: item.price
-                })
-            }).then(res => {
-                if(res.success) successCount++;
-                return res;
+                url: "/sale/add", type: "POST", contentType: "application/json",
+                data: JSON.stringify({ productId: item.id, quantity: item.qty, salePrice: item.price })
             });
         });
 
         Promise.all(requests).then(() => {
-            alert("结算成功！");
+            alert("收款成功！");
             cart = [];
             renderCart();
             location.reload();
         }).catch(() => {
-            alert("部分商品结算可能失败，请检查网络或库存。");
+            alert("结算出错，请检查库存");
             location.reload();
         });
     }
