@@ -54,7 +54,6 @@
                                     <th>类型</th>
                                     <th>金额</th>
                                     <th>时间</th>
-                                    <th class="text-end pe-4">操作人</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -69,9 +68,7 @@
                                         + ¥ <span th:text="${s.totalAmount}"></span>
                                     </td>
                                     <td class="text-muted small" th:text="${#temporals.format(s.saleTime, 'yyyy-MM-dd HH:mm')}"></td>
-                                    <td class="text-end pe-4 text-dark">
-                                        管理员
-                                    </td>
+
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(sales)}">
                                     <td colspan="5" class="text-center py-5 text-muted">暂无收入记录</td>

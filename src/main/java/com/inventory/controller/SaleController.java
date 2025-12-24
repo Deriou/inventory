@@ -2,6 +2,8 @@ package com.inventory.controller;
 
 import com.inventory.service.ISaleService;
 import com.inventory.entity.Sale;
+import com.inventory.entity.SysUser;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

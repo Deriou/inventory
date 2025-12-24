@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 /**
  * 财务管理控制器
- * 注：这里改用了 @Controller，因为我们要返回 Thymeleaf 页面，而不是 JSON 数据
  */
 @Controller
 public class FinanceController {

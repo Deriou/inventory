@@ -54,10 +54,8 @@ public class ReportController {
 
         List<Sale> sales = saleService.list();
         for (Sale s : sales) {
-            // 从 Map 里找名字，找不到显示 "未知商品"
             String pName = productMap.getOrDefault(s.getProductId(), "未知商品");
 
-            // 写入 CSV (注意 CSV 里如果名字带逗号可能会乱，简单起见这里假设名字没逗号)
             writer.printf("%d,%d,%s,%d,%.2f,%.2f,%.2f,%s%n",
                     s.getId(),
                     s.getProductId(),
